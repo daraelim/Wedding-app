@@ -7,22 +7,12 @@ export const CONFIG = {
   shuttleDetails: '구미 출발 셔틀의 탑승 장소와 시간은 확정 후 안내해 드립니다.',
   invitationVideo: '', // YouTube embed URL, e.g. https://www.youtube-nocookie.com/embed/VIDEO_ID
  photos: [
-  '/1.jpg',
-  '/2.jpg',
-  '/3.jpg',
-  '/4.jpg',
-  '/5.jpg',
-  '/6.jpg',
-  '/7.jpg',
-  '/8.jpg',
-  '/9.jpg',
-  '/10.jpg',
-  '/11.jpg',
-  '/12.jpg',
-  '/13.jpg',
-  '/14.jpg',
-  '/15.jpg'
-],, // public/photos/에 파일을 넣고 ['/photos/01.jpg', ...] 입력
+  '/1.jpg', '/2.jpg', '/3.jpg',
+  '/4.jpg', '/5.jpg', '/6.jpg',
+  '/7.jpg', '/8.jpg', '/9.jpg',
+  '/10.jpg', '/11.jpg', '/12.jpg',
+  '/13.jpg', '/14.jpg', '/15.jpg'
+],
   accounts: [
     {label:'신랑', bank:'',number:'',holder:''},
     {label:'신부', bank:'',number:'',holder:''},
