@@ -6,7 +6,7 @@ export const CONFIG = {
   rsvpDeadline: '', // 예: '2026-11-01' (날짜를 결정한 뒤 입력)
   shuttleDetails: '구미 출발 셔틀의 탑승 장소와 시간은 확정 후 안내해 드립니다.',
   invitationVideo: '', // YouTube embed URL, e.g. https://www.youtube-nocookie.com/embed/VIDEO_ID
-  photos: [], // public/photos/에 파일을 넣고 ['/photos/01.jpg', ...] 입력
+  photos: ['/대표.jpg'], // public/photos/에 파일을 넣고 ['/photos/01.jpg', ...] 입력
   accounts: [
     {label:'신랑', bank:'',number:'',holder:''},
     {label:'신부', bank:'',number:'',holder:''},
