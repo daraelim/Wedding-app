@@ -18,7 +18,66 @@ function admin(){if(!db)return '<h1>관리자</h1><p>Supabase 연결 후 관리�
 function rowHtml(rows){return rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.relationship)}</td><td>${esc(r.attendance)}</td><td>${r.guests}</td><td>${r.meals}</td><td>${r.shuttle_count}</td><td><button class="chip ${r.checked_in?'active':''}" data-check="${esc(r.id)}" ${r.attendance!=='참석'?'disabled':''}>${r.checked_in?'도착 ✓':'체크인'}</button></td></tr>`).join('')}
 function render(){const adminMode=state.admin||location.pathname.startsWith('/admin');app.innerHTML=`<div class="shell"><header class="top"><span>DA-RAE &amp; MINWOO</span><span class="flower" style="font-size:25px">✿</span><span>2026.11.14</span></header><main class="main">${adminMode?admin():C.postWedding?`<h1 class="heading">함께해주셔서 감사합니다</h1><div class="flourish">─ ✿ ─</div>${C.photos.length?`<div class="photo-grid">${C.photos.map(p=>`<img src="${esc(p)}" alt="혼례 사진" loading="lazy" data-photo="${esc(p)}">`).join('')}</div>`:''}${C.archiveVideo?`<iframe title="혼례 영상" width="100%" height="220" src="${esc(C.archiveVideo)}" allowfullscreen></iframe>`:''}`:({home,rsvp,guide,more}[state.tab]())}</main>${!adminMode&&!C.postWedding?`<nav class="nav">${[['home','초대'],['rsvp','참석'],['guide','안내'],['more','더보기']].map(([v,t])=>`<button data-tab="${v}" class="${state.tab===v?'selected':''}">${t}</button>`).join('')}</nav>`:''}</div>`}
 async function loadRows(){if(!db||!state.session)return;const {data,error}=await db.from('rsvps').select('*').order('created_at',{ascending:false});if(error){alert('목록 조회 실패: '+error.message);return}state.rows=data;render()}
-function csv(){const fields=['name','relationship','attendance','guests','meals','shuttle_count','checked_in','created_at'];const lines=[fields.join(','),...state.rows.map(r=>fields.map(k=>'"'+String(r[k]??'').replace(/"/g,'""')+'"').join(','))];const blob=new Blob(['\uFEFF'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='wedding-rsvp.csv';a.click();URL.revokeObjectURL(a.href)}
+
+function csv(){
+  const fields = [
+    ['name', '성함'],
+    ['relationship', '관계'],
+    ['attendance', '참석 여부'],
+    ['guests', '참석 인원'],
+    ['meals', '식사 인원'],
+    ['shuttle_count', '셔틀 인원'],
+    ['checked_in', '도착 여부'],
+    ['created_at', '제출 일시']
+  ];
+
+  const escapeCsv = value =>
+    '"' + String(value ?? '').replace(/"/g, '""') + '"';
+
+  const formatValue = (key, value) => {
+    if (key === 'checked_in') {
+      return value ? '도착' : '미도착';
+    }
+
+    if (key === 'created_at' && value) {
+      return new Intl.DateTimeFormat('ko-KR', {
+        timeZone: 'Asia/Seoul',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }).format(new Date(value));
+    }
+
+    return value ?? '';
+  };
+
+  const lines = [
+    fields.map(([, label]) => escapeCsv(label)).join(','),
+    ...state.rows.map(row =>
+      fields.map(([key]) =>
+        escapeCsv(formatValue(key, row[key]))
+      ).join(',')
+    )
+  ];
+
+  const blob = new Blob(
+    ['\uFEFF' + lines.join('\r\n')],
+    { type: 'text/csv;charset=utf-8' }
+  );
+
+  const a = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+
+  a.href = url;
+  a.download = '결혼식_하객명단.csv';
+  a.click();
+
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+  
 app.addEventListener('click',async e=>{const b=e.target.closest('button');if(b){if(b.dataset.tab){state.tab=b.dataset.tab;render();window.scrollTo(0,0);return}if(b.dataset.group){const group=b.dataset.group,val=b.dataset.value;if(group==='shuttle')state.shuttle=val==='yes';else state[group]=val;render();return}if(b.dataset.counter){const k=b.dataset.counter;state[k]=Math.max(k==='meals'?0:1,Math.min(30,state[k]+Number(b.dataset.delta)));if(k==='guests'){state.meals=Math.min(state.meals,state.guests);state.shuttleCount=Math.min(state.shuttleCount,state.guests)}if(k==='meals')state.meals=Math.min(state.meals,state.guests);if(k==='shuttleCount')state.shuttleCount=Math.min(state.shuttleCount,state.guests);render();return}if(b.dataset.check){const row=state.rows.find(x=>x.id===b.dataset.check);if(!row)return;const {error}=await db.from('rsvps').update({checked_in:!row.checked_in}).eq('id',row.id);if(error)alert(error.message);else await loadRows();return}if(b.dataset.action){const a=b.dataset.action;if(a==='rsvp'){state.tab='rsvp';render()}else if(a==='video')alert('초대영상이 준비되면 이곳에서 재생됩니다.');else if(a.startsWith('copy:')){const acc=C.accounts[Number(a.split(':')[1])];if(acc.number)navigator.clipboard.writeText(acc.number)}else if(a==='refresh')await loadRows();else if(a==='csv')csv();else if(a==='logout'){await db.auth.signOut();state.session=null;render()}}}const img=e.target.closest('[data-photo]');if(img){const overlay=document.createElement('div');overlay.className='lightbox';const photo=document.createElement('img');photo.src=img.dataset.photo;photo.alt='사진 확대';const close=document.createElement('button');close.textContent='×';close.setAttribute('aria-label','닫기');overlay.append(photo,close);overlay.addEventListener('click',()=>overlay.remove());document.body.append(overlay)}});
 app.addEventListener('input',e=>{if(e.target.id==='guest-name')state.name=e.target.value});
 app.addEventListener('submit',async e=>{e.preventDefault();const form=e.target;if(form.id==='rsvp-form'){const name=form.querySelector('[name=name]').value.trim();if(!name)return;const payload={name,relationship:state.relationship,attendance:state.attendance,guests:state.attendance==='참석'?state.guests:0,meals:state.attendance==='참석'?state.meals:0,shuttle_count:state.attendance==='참석'&&state.shuttle?state.shuttleCount:0};state.loading=true;const submit=form.querySelector('[type=submit]');submit.disabled=true;const {error}=await db.from('rsvps').insert(payload);state.loading=false;if(error){submit.disabled=false;form.querySelector('#form-error').textContent='접수하지 못했습니다. 잠시 후 다시 시도해 주세요.';return}state.submitted=true;render()}else if(form.id==='login-form'){const fd=new FormData(form);const {data,error}=await db.auth.signInWithPassword({email:fd.get('email'),password:fd.get('password')});if(error){form.querySelector('#login-error').textContent='로그인 실패: 이메일 또는 비밀번호를 확인해 주세요.';return}state.session=data.session;await loadRows()}else if(form.id==='walkin-form'){const fd=new FormData(form);const guests=Number(fd.get('guests')),meals=Number(fd.get('meals'));if(meals>guests){form.querySelector('#walkin-error').textContent='식사 인원은 참석 인원보다 많을 수 없습니다.';return}const {error}=await db.from('rsvps').insert({name:String(fd.get('name')).trim(),relationship:fd.get('relationship'),attendance:'참석',guests,meals,shuttle_count:0,checked_in:true});if(error){form.querySelector('#walkin-error').textContent='등록 실패: '+error.message;return}await loadRows()}});
