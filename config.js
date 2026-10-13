@@ -15,9 +15,9 @@ export const CONFIG = {
 ],
   // Gallery order is independent of the home hero image.
   galleryPhotos: [
-    '/3.jpg', '/4.jpg', '/5.jpg', '/6.jpg',
-    '/7.jpg', '/9.jpg', '/13.jpg', '/10.jpg',
-    '/14.jpg', '/12.jpg', '/11.jpg', '/15.png'
+    '/4.jpg', '/5.jpg', '/6.jpg', '/3.jpg',
+    '/7.jpg', '/9.jpg', '/14.jpg', '/13.jpg',
+    '/12.jpg', '/10.jpg', '/11.jpg', '/15.png'
   ],
   accounts: [
     {label:'신랑', bank:'',number:'',holder:''},
