@@ -128,7 +128,80 @@ function csv(){
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
   
-app.addEventListener('click',async e=>{const b=e.target.closest('button');if(b){if(b.dataset.tab){state.tab=b.dataset.tab;render();window.scrollTo(0,0);return}if(b.dataset.group){const group=b.dataset.group,val=b.dataset.value;if(group==='shuttle')state.shuttle=val==='yes';else state[group]=val;render();return}if(b.dataset.counter){const k=b.dataset.counter;state[k]=Math.max(k==='meals'?0:1,Math.min(30,state[k]+Number(b.dataset.delta)));if(k==='guests'){state.meals=Math.min(state.meals,state.guests);state.shuttleCount=Math.min(state.shuttleCount,state.guests)}if(k==='meals')state.meals=Math.min(state.meals,state.guests);if(k==='shuttleCount')state.shuttleCount=Math.min(state.shuttleCount,state.guests);render();return}if(b.dataset.check){const row=state.rows.find(x=>x.id===b.dataset.check);if(!row)return;const {error}=await db.from('rsvps').update({checked_in:!row.checked_in}).eq('id',row.id);if(error)alert(error.message);else await loadRows();return}if(b.dataset.action){const a=b.dataset.action;if(a==='rsvp'){state.tab='rsvp';render()}else if(a==='video')alert('초대영상이 준비되면 이곳에서 재생됩니다.');else if(a.startsWith('copy:')){const acc=C.accounts[Number(a.split(':')[1])];if(acc.number)navigator.clipboard.writeText(acc.number)}else if(a==='refresh')await loadRows();else if(a==='csv')csv();else if(a==='logout'){await db.auth.signOut();state.session=null;render()}}}const img=e.target.closest('[data-photo]');if(img){const overlay=document.createElement('div');overlay.className='lightbox';const photo=document.createElement('img');photo.src=img.dataset.photo;photo.alt='사진 확대';const close=document.createElement('button');close.textContent='×';close.setAttribute('aria-label','닫기');overlay.append(photo,close);overlay.addEventListener('click',()=>overlay.remove());document.body.append(overlay)}});
+function openPhotoLightbox(source){
+  const images=C.photos;
+  if(!images.length)return;
+  let index=Math.max(0,images.indexOf(source));
+  const previousFocus=document.activeElement;
+  const overlay=document.createElement('div');
+  overlay.className='lightbox';
+  overlay.setAttribute('role','dialog');
+  overlay.setAttribute('aria-modal','true');
+  overlay.setAttribute('aria-label','웨딩 사진 보기');
+  const photo=document.createElement('img');
+  photo.alt='한복 스냅';
+  const close=document.createElement('button');
+  close.type='button';
+  close.className='lightbox-close';
+  close.textContent='×';
+  close.setAttribute('aria-label','닫기');
+  const prev=document.createElement('button');
+  prev.type='button';
+  prev.className='lightbox-prev';
+  prev.textContent='‹';
+  prev.setAttribute('aria-label','이전 사진');
+  const next=document.createElement('button');
+  next.type='button';
+  next.className='lightbox-next';
+  next.textContent='›';
+  next.setAttribute('aria-label','다음 사진');
+  const counter=document.createElement('div');
+  counter.className='lightbox-counter';
+  counter.setAttribute('aria-live','polite');
+  const update=()=>{
+    photo.src=images[index];
+    photo.alt=`한복 스냅 ${index+1}`;
+    counter.textContent=`${index+1} / ${images.length}`;
+    prev.hidden=images.length<2;
+    next.hidden=images.length<2;
+  };
+  const change=step=>{index=(index+step+images.length)%images.length;update()};
+  const onKey=e=>{
+    if(e.key==='Escape')dismiss();
+    else if(e.key==='ArrowLeft'){e.preventDefault();change(-1)}
+    else if(e.key==='ArrowRight'){e.preventDefault();change(1)}
+    else if(e.key==='Tab'){
+      e.preventDefault();
+      const controls=images.length>1?[close,prev,next]:[close];
+      const current=controls.indexOf(document.activeElement);
+      const delta=e.shiftKey?-1:1;
+      controls[(current+delta+controls.length)%controls.length].focus();
+    }
+  };
+  const dismiss=()=>{
+    document.removeEventListener('keydown',onKey);
+    overlay.remove();
+    if(previousFocus&&previousFocus.isConnected)previousFocus.focus();
+  };
+  close.addEventListener('click',dismiss);
+  prev.addEventListener('click',()=>change(-1));
+  next.addEventListener('click',()=>change(1));
+  overlay.addEventListener('click',e=>{if(e.target===overlay)dismiss()});
+  let startX=null;
+  overlay.addEventListener('touchstart',e=>{if(e.touches.length===1)startX=e.touches[0].clientX},{passive:true});
+  overlay.addEventListener('touchend',e=>{
+    if(startX===null||!e.changedTouches.length)return;
+    const distance=e.changedTouches[0].clientX-startX;
+    startX=null;
+    if(Math.abs(distance)>45&&images.length>1)change(distance<0?1:-1);
+  },{passive:true});
+  overlay.append(photo,prev,next,counter,close);
+  update();
+  document.body.append(overlay);
+  document.addEventListener('keydown',onKey);
+  close.focus();
+}
+app.addEventListener('click',async e=>{const b=e.target.closest('button');if(b){if(b.dataset.tab){state.tab=b.dataset.tab;render();window.scrollTo(0,0);return}if(b.dataset.group){const group=b.dataset.group,val=b.dataset.value;if(group==='shuttle')state.shuttle=val==='yes';else state[group]=val;render();return}if(b.dataset.counter){const k=b.dataset.counter;state[k]=Math.max(k==='meals'?0:1,Math.min(30,state[k]+Number(b.dataset.delta)));if(k==='guests'){state.meals=Math.min(state.meals,state.guests);state.shuttleCount=Math.min(state.shuttleCount,state.guests)}if(k==='meals')state.meals=Math.min(state.meals,state.guests);if(k==='shuttleCount')state.shuttleCount=Math.min(state.shuttleCount,state.guests);render();return}if(b.dataset.check){const row=state.rows.find(x=>x.id===b.dataset.check);if(!row)return;const {error}=await db.from('rsvps').update({checked_in:!row.checked_in}).eq('id',row.id);if(error)alert(error.message);else await loadRows();return}if(b.dataset.action){const a=b.dataset.action;if(a==='rsvp'){state.tab='rsvp';render()}else if(a==='video')alert('초대영상이 준비되면 이곳에서 재생됩니다.');else if(a.startsWith('copy:')){const acc=C.accounts[Number(a.split(':')[1])];if(acc.number)navigator.clipboard.writeText(acc.number)}else if(a==='refresh')await loadRows();else if(a==='csv')csv();else if(a==='logout'){await db.auth.signOut();state.session=null;render()}}}const img=e.target.closest('[data-photo]');if(img){openPhotoLightbox(img.dataset.photo)}});
 app.addEventListener('input',e=>{if(e.target.id==='guest-name')state.name=e.target.value});
 app.addEventListener('submit',async e=>{e.preventDefault();const form=e.target;if(form.id==='rsvp-form'){const name=form.querySelector('[name=name]').value.trim();if(!name)return;if(!state.turnstileToken){
   form.querySelector('#form-error').textContent='보안 인증을 완료한 후 제출해 주세요.';
