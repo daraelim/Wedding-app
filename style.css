@@ -7,15 +7,18 @@
 
 /* Wedding invitation home: refined editorial spacing and arched 3:4 hero */
 .home-invitation{font-family:'Noto Serif KR',serif;color:#503b36}
-.home-overline{text-align:center;color:#967f79;font-style:italic;font-size:12px;letter-spacing:.05em;margin:0 0 24px}
+.home-overline{text-align:center;color:#806d67;font-style:italic;font-size:14px;letter-spacing:.05em;margin:0 0 24px}
 .home-hero-wrap{width:100%;max-width:350px;margin:0 auto}
 .home-hero-wrap .hero,.home-hero-wrap .placeholder{display:block;width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;object-position:center;border-radius:48% 48% 10px 10px}
 .home-hero-wrap .hero-video{background:#f1e6e0}
 .home-identity{text-align:center;padding:24px 0 0}
-.home-label{color:#a17e7e;font-size:11px;letter-spacing:.32em}
-.home-heading{font-size:26px;line-height:1.45;font-weight:500;letter-spacing:-.035em;margin:14px 0 12px}
-.home-names{font-size:18px;letter-spacing:.08em;line-height:1.8}
-.home-detail{font-size:13px;color:#866c67;line-height:2;margin:15px 0 0}
+.home-label{color:#8b676b;font-size:13px;letter-spacing:.25em}
+.home-heading{font-size:30px;line-height:1.45;font-weight:600;letter-spacing:-.035em;margin:14px 0 12px}
+.home-names{font-size:22px;font-weight:500;letter-spacing:.06em;line-height:1.75}
+.home-detail{font-size:17px;color:#6f5650;line-height:1.85;margin:15px 0 0}
 .home-divider{height:1px;width:42px;background:#dfcfca;margin:12px auto 12px}
-.home-message{text-align:center;font-size:13px;line-height:2.2;margin:0 0 27px}
+.home-message{text-align:center;font-size:16px;color:#503b36;line-height:2.05;margin:0 0 27px;word-break:keep-all}
 .home-invitation>.button{margin-top:0}
+
+/* Keep invitation text legible on narrow phones without horizontal clipping */
+@media(max-width:360px){.home-heading{font-size:28px}.home-names{font-size:21px}.home-detail{font-size:16px}.home-message{font-size:15px}}
