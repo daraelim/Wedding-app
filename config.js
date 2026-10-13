@@ -5,6 +5,7 @@ export const CONFIG = {
   reception: {name:'아미드호텔 서울',time:'오후 7시 ~ 9시',address:'서울 종로구 인사동5길 38'},
   rsvpDeadline: '', // 예: '2026-11-01' (날짜를 결정한 뒤 입력)
   shuttleDetails: '구미 출발 셔틀의 탑승 장소와 시간은 확정 후 안내해 드립니다.',
+  heroVideo: '/hero.mp4', // Upload the provided MP4 to public/hero.mp4 in this PR branch
   invitationVideo: '', // YouTube embed URL, e.g. https://www.youtube-nocookie.com/embed/VIDEO_ID
  photos: [
   '/1.jpg', '/2.jpg', '/3.jpg',
