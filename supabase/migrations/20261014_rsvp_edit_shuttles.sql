@@ -51,7 +51,5 @@ revoke all on function public.rsvp_pin_attempt(text,boolean) from public, anon,a
 grant execute on function public.rsvp_pin_attempt(text,boolean) to service_role;
 
 -- Public editing is forbidden. Only the Edge Function holding the service-role key can edit.
--- After deploying v2, remove the legacy public direct-insert policy and grant.
--- The Edge Function will own public writes and enforce the deadline.
-drop policy if exists "public can submit RSVP" on public.rsvps;
-revoke insert on public.rsvps from anon;
+-- Legacy INSERT access removal happens in a separate, post-merge hardening migration.
+-- This additive migration intentionally preserves the current RSVP service until switchover.
