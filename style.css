@@ -22,3 +22,14 @@
 
 /* Keep invitation text legible on narrow phones without horizontal clipping */
 @media(max-width:360px){.home-heading{font-size:28px}.home-names{font-size:21px}.home-detail{font-size:16px}.home-message{font-size:15px}}
+
+/* Detailed RSVP form: accessible touch targets and route selection */
+.rsvp-tabs{justify-content:center;margin:20px 0 24px}
+.rsvp-tabs .chip{font-size:14px;padding:12px 15px}
+.shuttle-route{background:#fcf7f3;margin:18px 0}
+.shuttle-route>b{display:block;font-size:16px;margin-bottom:13px}
+.shuttle-route .field{margin:17px 0 6px}
+#rsvp-form .field>label,#rsvp-lookup-form .field>label{font-size:16px}
+#rsvp-form input,#rsvp-lookup-form input{font-size:16px;min-height:48px}
+#rsvp-form .chip,#rsvp-lookup-form .chip{font-size:14px;min-height:42px}
+#rsvp-form .stepper button{min-width:44px;min-height:44px}
