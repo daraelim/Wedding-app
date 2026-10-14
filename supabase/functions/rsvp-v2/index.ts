@@ -3,13 +3,15 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.0';
 
 const headers = {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization, x-client-info, apikey, content-type','Access-Control-Allow-Methods':'POST, OPTIONS'};
 const respond=(body,status=200)=>new Response(JSON.stringify(body),{status,headers:{...headers,'Content-Type':'application/json'}});
-const deadline=Date.parse('2026-11-06T23:59:59+09:00');
+const deadline=Date.parse('2026-11-06T23:59:59.999+09:00');
 const encoder=new TextEncoder();
 const byteHex=arr=>Array.from(new Uint8Array(arr),b=>b.toString(16).padStart(2,'0')).join('');
-const secret=Deno.env.get('RSVP_PIN_PEPPER')||'';
+// Until an RSVP-specific secret is configured, use the existing server-only Turnstile secret with domain separation.
+// Rotate to a dedicated RSVP_PIN_PEPPER only with a planned PIN migration: changing the key invalidates all existing PINs.
+const secret=Deno.env.get('RSVP_PIN_PEPPER')||Deno.env.get('TURNSTILE_SECRET_KEY')||'';
 async function digest(v) {
   const key=await crypto.subtle.importKey('raw',encoder.encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
-  return byteHex(await crypto.subtle.sign('HMAC',key,encoder.encode(v)));
+  return byteHex(await crypto.subtle.sign('HMAC',key,encoder.encode('wedding-rsvp-pin-v2\\0'+v)));
 }
 const validInt=n=>Number.isInteger(n)&&n>=0&&n<=30;
 const fields=['gumi_outbound','gumi_return','gimcheon_outbound','gimcheon_return'];
