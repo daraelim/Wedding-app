@@ -11,7 +11,7 @@ const byteHex=arr=>Array.from(new Uint8Array(arr),b=>b.toString(16).padStart(2,'
 const secret=Deno.env.get('RSVP_PIN_PEPPER')||Deno.env.get('TURNSTILE_SECRET_KEY')||'';
 async function digest(v) {
   const key=await crypto.subtle.importKey('raw',encoder.encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
-  return byteHex(await crypto.subtle.sign('HMAC',key,encoder.encode('wedding-rsvp-pin-v2\\0'+v)));
+  return byteHex(await crypto.subtle.sign('HMAC',key,encoder.encode('wedding-rsvp-pin-v2:'+v)));
 }
 const validInt=n=>Number.isInteger(n)&&n>=0&&n<=30;
 const fields=['gumi_outbound','gumi_return','gimcheon_outbound','gimcheon_return'];
@@ -42,7 +42,9 @@ async function verifyTurnstile(token,ip) {
   if(ip)body.set('remoteip',ip);
   const response=await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify',{method:'POST',body});
   const data=await response.json();
-  return !!data.success;
+  const host=String(data.hostname||'');
+  const allowed=new Set(['darae-minwoo.vercel.app','wedding-app-3doy.vercel.app','wedding-app-3doy-git-feature-elegan-fe8d16-da-rae-lims-projects.vercel.app']);
+  return !!data.success && allowed.has(host);
 }
 serve(async req=>{
   if(req.method==='OPTIONS')return new Response(null,{headers});
