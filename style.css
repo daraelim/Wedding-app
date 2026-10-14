@@ -4,3 +4,32 @@
 .gallery-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:25px 0}.gallery-item{padding:0;border:0;background:transparent;border-radius:9px;overflow:hidden;display:block;aspect-ratio:3/4}.gallery-item img{display:block;width:100%;height:100%;object-fit:cover}.gallery-item:focus-visible{outline:3px solid #bb858a;outline-offset:3px}
 
 .hero-video{display:block;object-fit:cover;background:#f1e6e0}
+
+/* Wedding invitation home: refined editorial spacing and arched 3:4 hero */
+.home-invitation{font-family:'Noto Serif KR',serif;color:#503b36}
+.home-overline{text-align:center;color:#806d67;font-style:italic;font-size:14px;letter-spacing:.05em;margin:0 0 24px}
+.home-hero-wrap{width:100%;max-width:350px;margin:0 auto}
+.home-hero-wrap .hero,.home-hero-wrap .placeholder{display:block;width:100%;height:auto;aspect-ratio:3/4;object-fit:cover;object-position:center;border-radius:48% 48% 10px 10px}
+.home-hero-wrap .hero-video{background:#f1e6e0}
+.home-identity{text-align:center;padding:24px 0 0}
+.home-label{color:#8b676b;font-size:13px;letter-spacing:.25em}
+.home-heading{font-size:30px;line-height:1.45;font-weight:600;letter-spacing:-.035em;margin:14px 0 12px}
+.home-names{font-size:22px;font-weight:500;letter-spacing:.06em;line-height:1.75}
+.home-detail{font-size:17px;color:#6f5650;line-height:1.85;margin:15px 0 0}
+.home-divider{height:1px;width:42px;background:#dfcfca;margin:12px auto 12px}
+.home-message{text-align:center;font-size:16px;color:#503b36;line-height:2.05;margin:0 0 27px;word-break:keep-all}
+.home-invitation>.button{margin-top:0}
+
+/* Keep invitation text legible on narrow phones without horizontal clipping */
+@media(max-width:360px){.home-heading{font-size:28px}.home-names{font-size:21px}.home-detail{font-size:16px}.home-message{font-size:15px}}
+
+/* Detailed RSVP form: accessible touch targets and route selection */
+.rsvp-tabs{justify-content:center;margin:20px 0 24px}
+.rsvp-tabs .chip{font-size:14px;padding:12px 15px}
+.shuttle-route{background:#fcf7f3;margin:18px 0}
+.shuttle-route>b{display:block;font-size:16px;margin-bottom:13px}
+.shuttle-route .field{margin:17px 0 6px}
+#rsvp-form .field>label,#rsvp-lookup-form .field>label{font-size:16px}
+#rsvp-form input,#rsvp-lookup-form input{font-size:16px;min-height:48px}
+#rsvp-form .chip,#rsvp-lookup-form .chip{font-size:14px;min-height:42px}
+#rsvp-form .stepper button{min-width:44px;min-height:44px}

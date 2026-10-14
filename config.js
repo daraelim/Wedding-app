@@ -3,8 +3,8 @@ export const CONFIG = {
   date: '2026년 11월 14일 토요일',
   ceremony: {name:'운현궁',time:'오후 6시',address:'서울 종로구 삼일대로 464'},
   reception: {name:'아미드호텔 서울',time:'오후 7시 ~ 9시',address:'서울 종로구 인사동5길 38'},
-  rsvpDeadline: '', // 예: '2026-11-01' (날짜를 결정한 뒤 입력)
-  shuttleDetails: '구미 출발 셔틀의 탑승 장소와 시간은 확정 후 안내해 드립니다.',
+  rsvpDeadline: '2026-11-06', // Korea time, 23:59:59 inclusive
+  shuttleDetails: '구미 및 김천 출발 셔틀의 탑승 장소와 시간은 확정 후 안내해 드립니다.',
   heroVideo: '/hero.mp4', // Upload the provided MP4 to public/hero.mp4 in this PR branch
   invitationVideo: '', // YouTube embed URL, e.g. https://www.youtube-nocookie.com/embed/VIDEO_ID
  photos: [
