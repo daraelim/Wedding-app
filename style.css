@@ -33,3 +33,48 @@
 #rsvp-form input,#rsvp-lookup-form input{font-size:16px;min-height:48px}
 #rsvp-form .chip,#rsvp-lookup-form .chip{font-size:14px;min-height:42px}
 #rsvp-form .stepper button{min-width:44px;min-height:44px}
+
+
+/* Wedding directions: quiet editorial rhythm, warm ivory and dusty rose */
+.directions-page{font-family:'Noto Serif KR',serif;color:#503b36;word-break:keep-all}
+.directions-overline{text-align:center;font-size:11px;letter-spacing:.22em;color:#9a7778;margin:15px 0 11px}
+.directions-title{text-align:center;font-weight:600;letter-spacing:-.04em;font-size:29px;margin:0 0 15px}
+.directions-intro{text-align:center;font-size:15px;line-height:1.9;color:#7c6863;margin:0}
+.directions-rule{width:35px;height:1px;background:#d8bab4;margin:27px auto 29px}
+.directions-journey{border:1px solid #ead9d2;background:#fffaf7;border-radius:16px;padding:21px 23px;margin-bottom:38px}
+.directions-journey-stop{display:flex;align-items:center;gap:15px}
+.directions-journey-mark{width:39px;height:39px;display:grid;place-items:center;border:1px solid #d9b4b3;border-radius:50%;font:13px 'Noto Serif KR',serif;color:#a67379;flex:none}
+.directions-journey-stop div{display:flex;flex-direction:column;gap:4px}
+.directions-journey-type{font-size:11px;color:#997e77;letter-spacing:.04em}
+.directions-journey-stop strong{font-size:17px;font-weight:600}
+.directions-journey-path{display:flex;align-items:center;flex-direction:column;gap:1px;margin:6px 0 6px 19px;color:#bc9295;font-size:12px;line-height:1.2}
+.directions-journey-path span:first-child,.directions-journey-path span:last-child{height:10px;width:1px;background:#dfc3bd}
+.directions-venue{margin-bottom:32px}
+.directions-venue-head{display:flex;align-items:center;gap:13px}
+.directions-index{font-size:28px;font-style:italic;font-weight:400;color:#bb9292}
+.directions-caption{font:11px 'Noto Sans KR',sans-serif;letter-spacing:.1em;color:#a07c7c;margin:0 0 3px}
+.directions-venue h2{font-size:23px;font-weight:600;letter-spacing:-.04em;margin:0}
+.directions-time{font-size:14px;line-height:1.9;margin:15px 0 2px;color:#806963}
+.directions-time strong{font-size:16px;color:#503b36;font-weight:600}
+.directions-address{font-size:14px;color:#8b7670;margin:0 0 17px}
+.directions-map{width:100%;height:230px;background:#eee7e1;border:1px solid #e6d7d0;border-radius:11px;overflow:hidden}
+.directions-map iframe{display:block;width:100%;height:100%;border:0}
+.directions-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:11px}
+.directions-actions a{min-height:45px;display:flex;justify-content:center;align-items:center;gap:8px;color:#795b58;text-decoration:none;border:1px solid #dfcbc4;border-radius:9px;background:#fffaf7;font:13px 'Noto Sans KR',sans-serif}
+.directions-actions a:focus-visible,.directions-primary-link:focus-visible{outline:3px solid #bb858a;outline-offset:3px}
+.directions-transfer{text-align:center;background:#f5ece7;border-radius:15px;padding:26px 15px 22px;margin:20px 0 38px;border:1px solid #ebdad3}
+.directions-mini-label{color:#a77b7c;font:10px 'Noto Sans KR',sans-serif;letter-spacing:.15em}
+.directions-transfer h2{font-size:18px;font-weight:600;letter-spacing:-.04em;line-height:1.5;margin:13px 0}
+.directions-transfer>p{font-size:14px;line-height:1.9;color:#715c55;margin:0 0 18px}
+.directions-transfer>p strong{color:#503b36}
+.directions-primary-link{display:flex;text-decoration:none;align-items:center;justify-content:center;gap:8px;border-radius:9px;background:#9f777b;color:white;font:14px 'Noto Sans KR',sans-serif;min-height:48px}
+.directions-transfer .directions-note{font-size:12px;color:#947e77;margin:13px 0 0;line-height:1.8}
+.directions-info{border-top:1px solid #e5d7d0;padding-top:24px;margin-top:25px}
+.directions-info>h2{font-size:22px;font-weight:600;margin:8px 0 20px}
+.directions-info-row{display:flex;align-items:start;gap:13px;padding:15px 0;border-top:1px solid #eee1dc}
+.directions-info-row:first-of-type{border-top:0;padding-top:0}
+.directions-info-icon{color:#ba9292;font-size:13px;padding-top:3px}
+.directions-info-row h3{font-size:16px;font-weight:600;margin:0 0 8px}
+.directions-info-row p{font-size:13px;color:#816d66;line-height:1.9;margin:0 0 5px}
+.directions-end{text-align:center;color:#ae8a88;font-style:italic;font-size:13px;margin:34px 0 8px}
+@media(max-width:360px){.directions-journey{padding:19px 15px}.directions-title{font-size:27px}.directions-map{height:200px}}
