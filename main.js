@@ -248,7 +248,9 @@ app.addEventListener('submit',async e=>{e.preventDefault();const form=e.target;i
   const {data:result,error}=await db.functions.invoke('rsvp-v2',{body:{...data,action,turnstileToken:state.turnstileToken}});
   state.loading=false;state.turnstileToken=null;
   if(error||result?.error){
-    errorNode.textContent=result?.error||'처리하지 못했습니다. 인증을 다시 완료한 후 시도해 주세요.';
+    let message=result?.error;
+    if(!message&&error?.context){try{const detail=await error.context.json();message=detail?.error}catch{}}
+    errorNode.textContent=message||'처리하지 못했습니다. 인증을 다시 완료한 후 시도해 주세요.';
     submit.disabled=false;if(window.turnstile){try{window.turnstile.reset()}catch{}}return;
   }
   if(action==='lookup'){
