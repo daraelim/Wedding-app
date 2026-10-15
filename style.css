@@ -78,3 +78,26 @@
 .directions-info-row p{font-size:13px;color:#816d66;line-height:1.9;margin:0 0 5px}
 .directions-end{text-align:center;color:#ae8a88;font-style:italic;font-size:13px;margin:34px 0 8px}
 @media(max-width:360px){.directions-journey{padding:19px 15px}.directions-title{font-size:27px}.directions-map{height:200px}}
+
+
+/* Discreet account details: initially hidden, revealed only on request */
+.accounts-overline{text-align:center;color:#a07c7c;letter-spacing:.19em;font:11px 'Noto Sans KR',sans-serif;margin:10px 0}
+.accounts-hint{font-size:12px;color:#927d77;line-height:1.75;margin:18px 0 21px}
+.accounts-list{display:flex;flex-direction:column;gap:11px;margin-bottom:30px}
+.account-fold{border:1px solid #e9d9d2;border-radius:13px;background:#fffaf7;overflow:hidden}
+.account-fold summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:62px;padding:14px 17px}
+.account-fold summary::-webkit-details-marker{display:none}
+.account-fold summary:focus-visible{outline:3px solid #bb858a;outline-offset:-3px}
+.account-name{font-size:15px;font-weight:600;color:#503b36}
+.account-toggle{font:12px 'Noto Sans KR',sans-serif;display:flex;align-items:center;gap:8px;color:#977478;white-space:nowrap}
+.account-chevron{display:inline-block;font-size:20px;transition:transform .18s ease}
+.account-fold[open] .account-chevron{transform:rotate(180deg)}
+.account-fold[open] .account-toggle-label{font-size:0}
+.account-fold[open] .account-toggle-label:after{content:'접기';font-size:12px}
+.account-content{border-top:1px solid #eee1db;padding:16px 17px 19px;background:#fffdfb}
+.account-bank{line-height:1.9;color:#795d59;font-size:14px;overflow-wrap:anywhere}
+.account-bank strong{font-weight:600;color:#503b36}
+.account-holder{font-size:13px;color:#937b74;margin-top:2px}
+.account-pending{margin:0;color:#947e77}
+.account-copy{margin:14px 0 0;min-height:43px}
+@media(prefers-reduced-motion:reduce){.account-chevron{transition:none}}
