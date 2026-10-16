@@ -67,6 +67,7 @@ serve(async req=>{
       const record=guestData(body);
       const {error}=await db.from('rsvps').insert({name,pin_hash:pinHash,...record});
       if(error){
+        if(error.code==='23514'||error.message?.includes('RECEPTION_CAPACITY_EXCEEDED'))return respond({error:'피로연 정원 120명이 마감되었거나 신청 인원이 잔여 좌석을 초과했습니다. 식사 인원을 줄여 주세요.'},409);
         if(error.code==='23505')return respond({error:'동일한 이름과 비밀번호로 등록된 응답이 있습니다. 기존 응답 수정하기를 이용해 주세요.'},409);
         console.error('RSVP create failed',error.code);
         return respond({error:'저장하지 못했습니다. 다시 시도해 주세요.'},500);
@@ -87,7 +88,7 @@ serve(async req=>{
     }
     const edits=guestData(body);
     const {error}=await db.from('rsvps').update({...edits,updated_at:new Date().toISOString()}).eq('id',record.id).eq('pin_hash',pinHash);
-    if(error){console.error('RSVP update failed',error.code);return respond({error:'수정 내용을 저장하지 못했습니다.'},500)}
+    if(error){if(error.code==='23514'||error.message?.includes('RECEPTION_CAPACITY_EXCEEDED'))return respond({error:'피로연 신청 인원이 120명 정원을 초과합니다. 식사 인원을 줄여 주세요.'},409);console.error('RSVP update failed',error.code);return respond({error:'수정 내용을 저장하지 못했습니다.'},500)}
     return respond({ok:true});
   }catch(e){
     if(e instanceof Error&&(/성함|참석|인원/.test(e.message)))return respond({error:e.message},400);
