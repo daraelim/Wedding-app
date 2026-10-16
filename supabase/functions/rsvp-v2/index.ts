@@ -56,7 +56,7 @@ serve(async req=>{
   try{
     const body=await req.json();
     const action=body.action;
-    if(!['create','lookup','update'].includes(action))return respond({error:'요청이 올바르지 않습니다.'},400);
+    if(!['create','lookup','update','delete'].includes(action))return respond({error:'요청이 올바르지 않습니다.'},400);
     const {name,pin}=validate(body);
     const ip=req.headers.get('cf-connecting-ip')||req.headers.get('x-forwarded-for')?.split(',')[0]||'';
     if(!await verifyTurnstile(body.turnstileToken,ip))return respond({error:'보안 인증을 다시 완료해 주세요.'},403);
@@ -79,6 +79,12 @@ serve(async req=>{
     if(lookError||!record)return respond({error:'이름 또는 비밀번호가 일치하지 않습니다.'},401);
     await db.rpc('rsvp_pin_attempt',{p_key:attemptKey,p_success:true});
     if(action==='lookup')return respond({ok:true,record});
+    if(action==='delete'){
+      // Only the record authenticated by the matching name + PIN can be deleted.
+      const {data:removed,error:deleteError}=await db.from('rsvps').delete().eq('id',record.id).eq('pin_hash',pinHash).select('id');
+      if(deleteError||!removed?.length){console.error('RSVP self delete failed',deleteError?.code);return respond({error:'응답을 삭제하지 못했습니다. 다시 시도해 주세요.'},500)}
+      return respond({ok:true,deleted:true});
+    }
     const edits=guestData(body);
     const {error}=await db.from('rsvps').update({...edits,updated_at:new Date().toISOString()}).eq('id',record.id).eq('pin_hash',pinHash);
     if(error){console.error('RSVP update failed',error.code);return respond({error:'수정 내용을 저장하지 못했습니다.'},500)}
