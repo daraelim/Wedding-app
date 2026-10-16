@@ -60,7 +60,7 @@ async function featureClick(event){
  if(b.dataset.messageDelete){if(confirm('이 메시지를 삭제할까요? 답글도 함께 삭제됩니다.'))await mutate('wedding_messages','delete',b.dataset.messageDelete);return}
  if(b.dataset.archiveToggle){const x=archive.find(a=>a.id===b.dataset.archiveToggle);if(x)await mutate('wedding_archive','update',x.id,{published:!x.published});return}
  if(b.dataset.archiveDelete){if(confirm('이 기록을 삭제할까요?'))await mutate('wedding_archive','delete',b.dataset.archiveDelete);return}
- if(b.dataset.deleteRsvp){if(!await isAdmin())return alert('관리자만 삭제할 수 있습니다.');if(!confirm('이 하객의 응답을 영구 삭제할까요? 되돌릴 수 없습니다.'))return;const {error}=await db.from('rsvps').delete().eq('id',b.dataset.deleteRsvp);if(error)alert('삭제 실패: '+error.message);else window.dispatchEvent(new CustomEvent('wedding-rsvp-deleted'));return}
+ if(b.dataset.deleteRsvp){if(!await isAdmin())return alert('관리자만 삭제할 수 있습니다.');if(!confirm('이 하객의 응답을 영구 삭제할까요? 되돌릴 수 없습니다.'))return;const {data:deleted,error}=await db.rpc('admin_delete_rsvp',{p_id:b.dataset.deleteRsvp});if(error)alert('삭제 실패: '+error.message);else if(deleted!==true)alert('삭제할 응답을 찾지 못했습니다. 목록을 새로고침해 주세요.');else window.dispatchEvent(new CustomEvent('wedding-rsvp-deleted'));return}
 }
 async function featureSubmit(event){
  const f=event.target;if(!['guestbook-form','notice-editor','archive-editor'].includes(f.id))return;
