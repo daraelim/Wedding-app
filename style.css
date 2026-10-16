@@ -160,3 +160,28 @@
 .simple-guide .directions-note{font-size:15px;line-height:1.8}
 .simple-guide .directions-venue .directions-address{font-size:15px}
 @media(max-width:360px){.simple-guide .guide-key strong{font-size:26px}.simple-guide .guide-lines p{font-size:15px}}
+
+/* Wedding management: large, touch-friendly controls */
+.wedding-extras{font-size:16px;line-height:1.75}
+.wedding-extras form{background:#fffaf7;border:1px solid #eadbd5;border-radius:14px;padding:18px;margin:20px 0 30px}
+.wedding-extras label,.admin-extras label:not(.check-label){font-weight:600;font-size:15px;display:block;margin:15px 0 7px}
+.wedding-extras textarea,.admin-extras textarea{box-sizing:border-box;width:100%;min-height:114px;font:inherit;font-size:15px;padding:12px;border:1px solid #e4d2cc;border-radius:9px;background:white;color:#503b36;resize:vertical}
+.wedding-extras input,.admin-extras input:not([type="checkbox"]),.admin-extras select{width:100%;min-height:44px}
+.section-heading{font-size:20px;margin:26px 0 14px}
+.guestbook-card{border:1px solid #eadbd5;border-radius:13px;padding:16px 17px;background:#fffaf7;margin:13px 0;overflow-wrap:anywhere}
+.guestbook-card p{margin:12px 0;white-space:pre-wrap}
+.guestbook-author{display:flex;gap:15px;justify-content:space-between;align-items:baseline}
+.guestbook-author small{color:#957c76;font-size:12px}
+.guestbook-actions{display:flex;gap:8px;flex-wrap:wrap}
+.guestbook-reply{border-left:3px solid #e2ceca;background:#fff;padding:11px 14px;margin:13px 0 0;font-size:14px}
+.guestbook-reply p{margin:7px 0}
+.admin-extras{margin-top:35px;border-top:2px solid #dbc7c3;padding-top:15px}
+.admin-extras h2{font-size:20px;margin:30px 0 10px}
+.admin-extras form{border:1px solid #eadbd5;border-radius:13px;padding:16px;margin:14px 0;background:#fffaf7}
+.admin-extras .check-label{display:flex;align-items:center;gap:10px;margin:13px 0}
+.admin-extras .check-label input{width:20px;height:20px;min-height:0;flex:0 0 20px}
+.admin-extra-item{border-bottom:1px solid #eadbd5;padding:13px 0;line-height:1.7;overflow-wrap:anywhere}
+.admin-extra-item p{margin:6px 0}
+.admin-extra-item .chip{margin:6px 5px 0 0;min-height:41px}
+.danger-outline{border-color:#bd7f86;color:#9b394a}
+.archive-link{color:#8f5962;font-weight:600;text-underline-offset:4px}
