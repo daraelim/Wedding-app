@@ -21,10 +21,62 @@ export const CONFIG = {
     '/7.jpg', '/10.jpg', '/11.jpg', '/15.png'
   ],
   accounts: [
-    {label:'신랑', bank:'',number:'',holder:''},
-    {label:'신부', bank:'',number:'',holder:''},
-    {label:'신랑측 부모님', bank:'',number:'',holder:''},
-    {label:'신부측 부모님', bank:'',number:'',holder:''}
+    {
+      "label": "신랑",
+      "members": [
+        {
+          "relation": "신랑",
+          "bank": "NH농협은행",
+          "number": "302-2468-4535-81",
+          "holder": "남민우"
+        }
+      ]
+    },
+    {
+      "label": "신부",
+      "members": [
+        {
+          "relation": "신부",
+          "bank": "NH농협",
+          "number": "785-01-132-485",
+          "holder": "임다래"
+        }
+      ]
+    },
+    {
+      "label": "신랑측 부모님",
+      "members": [
+        {
+          "relation": "아버지",
+          "bank": "IBK기업은행",
+          "number": "519-026025-01-029",
+          "holder": "남수송"
+        },
+        {
+          "relation": "어머니",
+          "bank": "하나은행",
+          "number": "173-19-00729-6",
+          "holder": "박혜자"
+        }
+      ]
+    },
+    {
+      "label": "신부측 부모님",
+      "members": [
+        {
+          "relation": "아버지",
+          "bank": "NH농협",
+          "number": "785-01-165593",
+          "holder": "임채현"
+        },
+        {
+          "relation": "어머니",
+          "bank": "NH농협",
+          "number": "785-01-158331",
+          "holder": "김난희"
+        }
+      ]
+    }
   ],
   postWedding: false,
   archiveVideo: ''
