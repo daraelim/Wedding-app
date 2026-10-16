@@ -32,7 +32,9 @@ function guestData(input){
   }else{
     if(guests<1||meals>guests||counts.gumi_outbound+counts.gimcheon_outbound>guests||counts.gumi_return+counts.gimcheon_return>guests)throw Error('참석 인원과 셔틀 인원을 확인해 주세요.');
   }
-  return {relationship,attendance,guests,meals,...counts,
+  const mealSlot=attendance==='불참'||meals===0?'none':String(input.meal_slot||'undecided');
+  if(!['first','second','undecided','none'].includes(mealSlot)||(meals>0&&mealSlot==='none'))throw Error('식사 시간 선택을 확인해 주세요.');
+  return {relationship,attendance,guests,meals,meal_slot:mealSlot,...counts,
     shuttle_count:Math.max(counts.gumi_outbound+counts.gimcheon_outbound,counts.gumi_return+counts.gimcheon_return)};
 }
 async function verifyTurnstile(token,ip) {
@@ -73,7 +75,7 @@ serve(async req=>{
     }
     const {data:allowed,error:rateError}=await db.rpc('rsvp_pin_attempt',{p_key:attemptKey,p_success:false});
     if(rateError||!allowed)return respond({error:'인증 시도 횟수를 초과했습니다. 한 시간 후 다시 시도하거나 신랑·신부에게 연락해 주세요.'},429);
-    const {data:record,error:lookError}=await db.from('rsvps').select('id,name,relationship,attendance,guests,meals,gumi_outbound,gumi_return,gimcheon_outbound,gimcheon_return').eq('name',name).eq('pin_hash',pinHash).maybeSingle();
+    const {data:record,error:lookError}=await db.from('rsvps').select('id,name,relationship,attendance,guests,meals,meal_slot,gumi_outbound,gumi_return,gimcheon_outbound,gimcheon_return').eq('name',name).eq('pin_hash',pinHash).maybeSingle();
     if(lookError||!record)return respond({error:'이름 또는 비밀번호가 일치하지 않습니다.'},401);
     await db.rpc('rsvp_pin_attempt',{p_key:attemptKey,p_success:true});
     if(action==='lookup')return respond({ok:true,record});
