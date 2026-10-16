@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "우리, 혼례합니다 | 다래 · 민우",
+  "short_name": "우리, 혼례합니다",
+  "description": "다래와 민우의 전통혼례 초대장",
+  "lang": "ko",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fcf8f4",
+  "theme_color": "#fcf8f4",
+  "icons": [
+    {
+      "src": "/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
