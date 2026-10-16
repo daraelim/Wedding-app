@@ -77,7 +77,7 @@ async function featureSubmit(event){
   const values={title:String(fd.get('title')).trim(),body:String(fd.get('body')).trim(),published:fd.has('published'),updated_at:new Date().toISOString()};
   await mutate('wedding_notices',fd.get('id')?'update':'insert',fd.get('id'),values);
  }else if(f.id==='archive-editor'){
-  const addr=String(fd.get('url')||'');if(!/^https:\\/\\//i.test(addr))return alert('HTTPS 주소를 입력해 주세요.');
+  const addr=String(fd.get('url')||'');if(!addr.startsWith('https://'))return alert('HTTPS 주소를 입력해 주세요.');
   await mutate('wedding_archive','insert',null,{title:String(fd.get('title')).trim(),url:addr,kind:fd.get('kind'),published:fd.has('published')});
  }
 }
