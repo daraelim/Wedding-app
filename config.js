@@ -2,7 +2,7 @@ export const CONFIG = {
   names: '다래 · 민우',
   date: '2026년 11월 14일 토요일',
   ceremony: {name:'운현궁',time:'오후 6시',address:'서울 종로구 삼일대로 464'},
-  reception: {name:'아미드호텔 서울',time:'오후 7시 ~ 9시 (전통혼례 후 1회)',address:'서울 종로구 인사동5길 38'},
+  reception: {name:'아미드호텔 서울',time:'1부 오후 7시 ~ 9시 (전통혼례 후)',address:'서울 종로구 인사동5길 38'},
   rsvpDeadline: '2026-11-06', // Korea time, 23:59:59 inclusive
   shuttleDetails: '김천 검역본부·구미 구미시청 낮 12시 30분 출발 / 양 지역 귀가 셔틀 출발 시간 추후 확정 (정확한 승차 지점 추후 공지)',
   notices: [
