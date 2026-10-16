@@ -67,7 +67,7 @@ function guide(){
       <div class="guide-key"><span>식사 · 2부</span><strong>18:30–20:30</strong><small>아미드호텔 · 단체버스 하객 권장</small></div>
     </div>
     <div class="guide-important"><strong>운현궁은 음식물과 꽃 반입이 금지됩니다.</strong><p>야외 혼례로 좌석이 제한되어 있으니 따뜻하게 입고 오세요. 밝을 때 사진을 남기시려면 조금 일찍 방문해 주세요.</p></div>
-    <section class="guide-essentials"><h2>셔틀 안내</h2><div class="guide-lines"><p><strong>김천 · 검역본부</strong> 13:00 출발 / 20:30 귀가</p><p><strong>구미 · 구미시청</strong> 13:00 출발 / 20:30 귀가</p><p><strong>운현궁 ↔ 아미드호텔</strong> 약 15분 간격 셔틀 · 도보 약 10분</p></div><p class="small muted">정확한 승차 위치 및 운행 시간은 추후 공지합니다.</p></section>
+    <section class="guide-essentials"><h2>셔틀 안내</h2><div class="guide-lines"><p><strong>김천 · 검역본부</strong> 12:30 출발 예정 / 20:30 귀가</p><p><strong>구미 · 구미시청</strong> 12:30 출발 예정 / 20:30 귀가</p><p><strong>운현궁 ↔ 아미드호텔</strong> 약 15분 간격 셔틀 · 도보 약 10분</p></div><p class="small muted">정확한 승차 위치 및 운행 시간은 추후 공지합니다.</p></section>
     <section class="guide-essentials"><h2>공지사항</h2><p class="small muted">안내 내용은 계속 업데이트됩니다. 방문 전 한 번 더 확인해 주세요.</p><div class="guide-notices">${notices}</div></section>
     <details class="guide-extra"><summary>오시는 길 · 지도 · 주차 안내</summary>
       ${venueSection('01','전통혼례',C.ceremony)}
