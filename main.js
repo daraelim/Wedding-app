@@ -6,6 +6,11 @@ const turnstileScript = document.createElement('script');
 turnstileScript.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 turnstileScript.async = true;
 turnstileScript.defer = true;
+// Reuse a single loading promise even when the RSVP form is re-rendered.
+const turnstileReady = new Promise((resolve,reject)=>{
+  turnstileScript.addEventListener('load',()=>resolve(true),{once:true});
+  turnstileScript.addEventListener('error',()=>reject(new Error('Turnstile script blocked')),{once:true});
+});
 document.head.appendChild(turnstileScript);
 
 const url=import.meta.env.VITE_SUPABASE_URL, key=import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -28,7 +33,7 @@ function rsvp(){
   if(closed)return head+'<div class="panel center">응답 및 수정 기간이 마감되었습니다.<br>변경이나 추가 참석은 신랑·신부에게 직접 연락해 주세요.</div>';
   const tabs=`<div class="chips rsvp-tabs">${chip('새로 응답하기','rsvpMode','new',!lookup&&!edit)}${chip('기존 응답 수정하기','rsvpMode','lookup',lookup||edit)}</div>`;
   const name=`<div class="field"><label for="guest-name">성함</label><input id="guest-name" name="name" required maxlength="60" autocomplete="name" value="${esc(state.name)}" placeholder="성함을 입력해 주세요"></div>`;
-  const verify=`<div id="turnstile-widget"></div><p id="form-error" class="error" role="alert"></p>`;
+  const verify=`<div id="turnstile-widget"></div><p id="captcha-help" class="small muted" aria-live="polite">인증 체크가 안 되면 카카오톡 내 브라우저 대신 Safari 또는 Chrome에서 열어주세요.</p><p id="form-error" class="error" role="alert"></p>`;
   if(lookup)return head+tabs+`<form id="rsvp-lookup-form">${name}${pinField()}<p class="small muted">최초 응답 당시 설정한 이름과 비밀번호를 입력해 주세요.</p>${verify}<button class="button" type="submit">내 응답 불러오기</button></form>`;
   const relationship=`<div class="field"><label>우리와의 인연</label><div class="chips">${['가족','직장','학교','친구','기타'].map(v=>chip(v,'relationship',v,state.relationship===v)).join('')}</div></div>`;
   const attendance=`<div class="field"><label>참석 여부</label><div class="chips">${chip('참석합니다','attendance','참석',state.attendance==='참석')}${chip('참석이 어렵습니다','attendance','불참',state.attendance==='불참')}</div></div>`;
@@ -93,26 +98,35 @@ function render(){
 
     const showTurnstile=()=>{
       if(!widget.isConnected||!window.turnstile)return;
-
-      window.turnstile.render(widget,{
-        sitekey:siteKey,
-        callback:(token)=>{
-          state.turnstileToken=token;
-        },
-        'expired-callback':()=>{
-          state.turnstileToken=null;
-        },
-        'error-callback':()=>{
-          state.turnstileToken=null;
-        }
-      });
+      try{
+        window.turnstile.render(widget,{
+          sitekey:siteKey,
+          theme:'light',
+          callback:(token)=>{
+            if(!widget.isConnected)return;
+            state.turnstileToken=token;
+            const feedback=document.querySelector('#captcha-help');
+            if(feedback)feedback.textContent='보안 인증이 완료되었습니다.';
+          },
+          'expired-callback':()=>{
+            state.turnstileToken=null;
+            const feedback=document.querySelector('#captcha-help');
+            if(feedback)feedback.textContent='인증이 만료되었습니다. 다시 체크해 주세요.';
+          },
+          'error-callback':(code)=>{
+            state.turnstileToken=null;
+            const feedback=document.querySelector('#captcha-help');
+            if(feedback)feedback.textContent='보안 인증을 불러오지 못했습니다 ('+String(code||'네트워크 오류')+'). 카카오톡 내 브라우저라면 Safari 또는 Chrome에서 열어주세요.';
+          }
+        });
+      }catch(err){
+        widget.textContent='보안 인증을 열지 못했습니다. Safari 또는 Chrome에서 다시 접속해 주세요.';
+      }
     };
-
-    if(window.turnstile){
-      showTurnstile();
-    }else{
-      turnstileScript.addEventListener('load',showTurnstile,{once:true});
-    }
+    if(window.turnstile)showTurnstile();
+    else turnstileReady.then(showTurnstile).catch(()=>{
+      if(widget.isConnected)widget.textContent='보안 인증이 차단되었습니다. Safari 또는 Chrome에서 다시 접속해 주세요.';
+    });
   }
 }
 async function loadRows(){if(!db||!state.session)return;const {data,error}=await db.from('rsvps').select('*').order('created_at',{ascending:false});if(error){alert('목록 조회 실패: '+error.message);return}state.rows=data;render()}
