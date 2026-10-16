@@ -48,11 +48,11 @@ async function featureClick(event){
  if(b.hasAttribute('data-cancel-reply')){replyTo=null;window.dispatchEvent(new CustomEvent('wedding-features-changed'));return}
  if(b.dataset.reply){replyTo=b.dataset.reply;window.dispatchEvent(new CustomEvent('wedding-features-changed'));window.scrollTo(0,0);return}
  if(b.dataset.like){
-  const {data}=await db.auth.getSession(); // Guests do not need to sign in.
+  // Guests do not need to sign in.
   const widget=document.querySelector('#guestbook-turnstile');
   if(!token){alert('좋아요를 누르려면 먼저 위의 보안 인증을 완료해 주세요.');return}
   const {data:r,error}=await db.functions.invoke('wedding-guestbook',{body:{action:'like',message_id:b.dataset.like,turnstileToken:token}});
-  token=null;if(error||r?.error){alert(r?.error||'다시 시도해 주세요.');return}await refresh();return;
+  token=null;if(window.turnstile){try{window.turnstile.reset()}catch{}}if(error||r?.error){alert(r?.error||'다시 시도해 주세요.');return}await refresh();return;
  }
  if(b.dataset.noticeEdit){const n=notices.find(x=>x.id===b.dataset.noticeEdit),f=document.querySelector('#notice-editor');if(n&&f){f.elements.id.value=n.id;f.elements.title.value=n.title;f.elements.body.value=n.body;f.elements.published.checked=n.published;f.scrollIntoView({behavior:'smooth'})}return}
  if(b.dataset.noticeDelete){if(confirm('이 공지를 삭제할까요?'))await mutate('wedding_notices','delete',b.dataset.noticeDelete);return}
@@ -69,8 +69,8 @@ async function featureSubmit(event){
   const err=f.querySelector('#guestbook-error');if(!token){err.textContent='보안 인증을 완료해 주세요.';return}
   const submit=f.querySelector('[type=submit]');submit.disabled=true;
   const {data,error}=await db.functions.invoke('wedding-guestbook',{body:{action:'post',author:String(fd.get('author')||'').trim(),message:String(fd.get('body')||'').trim(),parent_id:replyTo,turnstileToken:token}});
-  submit.disabled=false;token=null;if(error||data?.error){err.textContent=data?.error||'보내지 못했습니다. 다시 인증해 주세요.';renderFeatureCaptcha();return}
-  replyTo=null;alert('축하 메시지가 접수됐어요. 관리자 확인 후 공개됩니다.');f.reset();renderFeatureCaptcha();return;
+  submit.disabled=false;token=null;if(window.turnstile){try{window.turnstile.reset()}catch{}}if(error||data?.error){err.textContent=data?.error||'보내지 못했습니다. 다시 인증해 주세요.';return}
+  replyTo=null;alert('축하 메시지가 접수됐어요. 관리자 확인 후 공개됩니다.');f.reset();return;
  }
  if(!await isAdmin())return alert('관리자만 수정할 수 있습니다.');
  if(f.id==='notice-editor'){
