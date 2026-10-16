@@ -72,3 +72,12 @@ USING(EXISTS(SELECT 1 FROM public.admin_users a WHERE a.user_id=(SELECT auth.uid
 WITH CHECK(EXISTS(SELECT 1 FROM public.admin_users a WHERE a.user_id=(SELECT auth.uid())));
 CREATE POLICY "archive admin delete" ON public.wedding_archive FOR DELETE TO authenticated
 USING(EXISTS(SELECT 1 FROM public.admin_users a WHERE a.user_id=(SELECT auth.uid())));
+
+-- Atomic like tally; only service-role may call. Moderated counts are public read-only.
+CREATE OR REPLACE FUNCTION public.wedding_increment_like(p_message_id uuid) RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER SET search_path=public AS $$
+BEGIN
+ UPDATE public.wedding_messages SET likes=likes+1 WHERE id=p_message_id AND approved=true;
+END $$;
+REVOKE ALL ON FUNCTION public.wedding_increment_like(uuid) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.wedding_increment_like(uuid) TO service_role;
