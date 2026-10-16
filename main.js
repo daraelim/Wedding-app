@@ -20,13 +20,14 @@ const app=document.querySelector('#app');
 initFeatures(db,C);
 window.addEventListener('wedding-features-changed',()=>render());
 window.addEventListener('wedding-rsvp-deleted',()=>loadRows());
-const state={tab:'home',relationship:'가족',attendance:'참석',shuttle:false,guests:1,meals:1,shuttleCount:1,submitted:false,name:'',pin:'',rsvpMode:'new',gumi:false,gimcheon:false,gumiTrip:'round',gimcheonTrip:'round',gumiCount:1,gimcheonCount:1,mealSlot:'undecided',admin:false,session:null,rows:[],loading:false,turnstileToken:null};
+const state={tab:'home',relationship:'가족',attendance:'참석',shuttle:false,guests:1,meals:1,shuttleCount:1,submitted:false,name:'',pin:'',rsvpMode:'new',gumi:false,gimcheon:false,gumiTrip:'round',gimcheonTrip:'round',gumiCount:1,gimcheonCount:1,mealSlot:'first',receptionStatus:null,admin:false,session:null,rows:[],loading:false,turnstileToken:null};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const button=(label,action,cls='button')=>`<button class="${cls}" data-action="${action}">${label}</button>`;
 const chip=(label,group,value,selected)=>`<button type="button" class="chip ${selected?'active':''}" data-group="${group}" data-value="${esc(value)}">${esc(label)}</button>`;
 const count=(key,label,min=1)=>`<div class="field"><label>${label}</label><div class="stepper"><button type="button" data-counter="${key}" data-delta="-1">−</button><span>${state[key]}명</span><button type="button" data-counter="${key}" data-delta="1">+</button></div></div>`;
 function home(){return `<section class="home-invitation"><div class="home-overline">Together, from now on</div><div class="home-hero-wrap">${C.heroVideo?`<video class="hero hero-video" src="${esc(C.heroVideo)}" poster="${esc(C.photos[0] || '')}" autoplay muted loop playsinline webkit-playsinline preload="metadata" aria-label="다래와 민우의 초대 영상"></video>`:C.photos.length?`<img class="hero" src="${esc(C.photos[0])}" alt="우리의 한복 스냅">`:'<div class="placeholder">우리의 한복 스냅사진을 준비하고 있습니다.</div>'}</div><div class="home-identity"><div class="home-label">INVITATION</div><h1 class="home-heading">우리, 혼례합니다</h1><div class="home-names">${esc(C.names)}</div><p class="home-detail">${esc(C.date)}<br>${esc(C.ceremony.time)} · ${esc(C.ceremony.name)}</p></div>${C.invitationVideo?`<div class="panel"><iframe title="초대영상" src="${esc(C.invitationVideo)}" width="100%" height="220" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`:''}<div class="home-divider" aria-hidden="true"></div><p class="home-message">저희 두 사람의 새로운 시작에<br>함께하시어 축복해 주시기 바랍니다.</p>${button('참석 여부 알려주기 →','rsvp','button secondary')}</section>`}
 function gallery(){return `<div class="center small muted" style="letter-spacing:3px">OUR MOMENTS</div><h1 class="heading">우리의 순간들</h1><div class="flourish">─ ✿ ─</div><p class="center intro muted">다래와 민우의 소중한 기록<br>사진을 누르면 크게 볼 수 있어요.</p>${C.galleryPhotos.length?`<div class="gallery-grid">${C.galleryPhotos.map((p,i)=>`<button type="button" class="gallery-item" data-photo="${esc(p)}" aria-label="사진 ${i+1} 크게 보기"><img src="${esc(p)}" alt="한복 스냅 ${i+1}" loading="lazy"></button>`).join('')}</div>`:'<div class="panel center">사진을 준비하고 있습니다.</div>'}`}
+async function loadReceptionStatus(){if(!db)return;const {data,error}=await db.rpc('reception_capacity_status');if(!error&&data){state.receptionStatus=data;const display=document.querySelector('#reception-capacity');if(display)display.textContent=`${data.reserved}명 / ${data.capacity}명 신청 · 잔여 ${data.remaining}명`;}}
 const rsvpClosed=()=>Date.now()>new Date(C.rsvpDeadline+'T23:59:59+09:00').getTime();
 const routeFields=(key,label)=>`<div class="panel shuttle-route"><b>${label} 셔틀버스 이용</b><div class="chips">${chip('이용 안 함',key,'no',!state[key])}${chip('이용함',key,'yes',state[key])}</div>${state[key]?`<div class="field"><label>이용 구간</label><div class="chips">${chip('왕복',key+'Trip','round',state[key+'Trip']==='round')}${chip('서울행 편도',key+'Trip','out',state[key+'Trip']==='out')}${chip('귀가 편도',key+'Trip','back',state[key+'Trip']==='back')}</div></div>${count(key+'Count','이용 인원')}`:''}</div>`;
 const pinField=()=>`<div class="field"><label for="guest-pin">숫자 4자리 비밀번호</label><input id="guest-pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" minlength="4" required autocomplete="off" value="${esc(state.pin)}" placeholder="숫자 4자리"><p class="small muted">나중에 응답을 수정할 때 필요합니다. 잊지 않도록 기억해 주세요.</p></div>`;
@@ -42,9 +43,10 @@ function rsvp(){
   if(lookup)return head+tabs+`<form id="rsvp-lookup-form">${name}${pinField()}<p class="small muted">최초 응답 당시 설정한 이름과 비밀번호를 입력해 주세요.</p>${verify}<button class="button" type="submit">내 응답 불러오기</button></form>`;
   const relationship=`<div class="field"><label>우리와의 인연</label><div class="chips">${['가족','직장','학교','친구','기타'].map(v=>chip(v,'relationship',v,state.relationship===v)).join('')}</div></div>`;
   const attendance=`<div class="field"><label>참석 여부</label><div class="chips">${chip('참석합니다','attendance','참석',state.attendance==='참석')}${chip('참석이 어렵습니다','attendance','불참',state.attendance==='불참')}</div></div>`;
-  const mealChoice=`<div class="panel meal-choice"><b>식사 시간 선택</b><p class="small muted">식사하실 시간대를 선택해 주세요. 단체버스 이용객께는 2부를 권장합니다.</p><div class="chips">${chip('1부 · 15:30~17:30','mealSlot','first',state.mealSlot==='first')}${chip('2부 · 18:30~20:30','mealSlot','second',state.mealSlot==='second')}${chip('미정','mealSlot','undecided',state.mealSlot==='undecided')}</div><p class="small muted">식사 인원이 0명이면 시간대 선택은 적용되지 않습니다. 참석 인원과 식사 인원은 별도로 입력해 주세요.</p></div>`;
+  const cap=state.receptionStatus;
+  const mealChoice=`<div class="panel meal-choice"><b>아미드호텔 피로연 · 19:00~21:00</b><p class="small muted">전통혼례가 끝난 뒤 피로연은 1회만 진행합니다.</p><p id="reception-capacity" class="reception-capacity" aria-live="polite">${cap?`${cap.reserved}명 / ${cap.capacity}명 신청 · 잔여 ${cap.remaining}명`:'예약 현황 불러오는 중…'}</p><p class="small muted">식사 인원이 0명이면 피로연 신청 인원에 포함되지 않습니다. 정원은 120명입니다.</p></div>`;
   const details=state.attendance==='참석'?
-    count('guests','함께 오시는 분 포함 참석 인원')+count('meals','아미드호텔 피로연 식사 인원',0)+(state.meals>0?mealChoice:'')+routeFields('gumi','구미 출발')+routeFields('gimcheon','김천 출발'):'';
+    count('guests','함께 오시는 분 포함 참석 인원')+count('meals','아미드호텔 피로연 식사 인원',0)+mealChoice+routeFields('gumi','구미 출발')+routeFields('gimcheon','김천 출발'):'';
   const notice='<div class="panel notice">11월 6일까지 이름과 숫자 4자리 비밀번호로 응답을 수정할 수 있습니다. 마감 후에는 신랑·신부에게 따로 연락해 주세요.<br>연락처는 수집하지 않으며 참석 확인과 행사 운영 목적으로만 정보를 사용합니다. 비밀번호는 암호화된 검증값으로 보관합니다.</div>';
   const disabled=!db||state.loading?'disabled':'';
   const submit=state.loading?'전송 중…':edit?'수정 내용 저장하기':'참석 여부 전달하기';
@@ -62,9 +64,9 @@ function guide(){
     <div class="directions-overline">WEDDING GUIDE</div><h1 class="directions-title">혼례 안내</h1>
     <p class="directions-intro">11월 14일 토요일 · 운현궁</p>
     <div class="guide-summary">
-      <div class="guide-key"><span>식사 · 1부</span><strong>15:30–17:30</strong><small>아미드호텔 · 개별 방문 하객 권장</small></div>
+      
       <div class="guide-key"><span>전통혼례</span><strong>18:00</strong><small>운현궁 · 17:50 사물놀이</small></div>
-      <div class="guide-key"><span>식사 · 2부</span><strong>18:30–20:30</strong><small>아미드호텔 · 단체버스 하객 권장</small></div>
+      <div class="guide-key"><span>피로연 · 1회</span><strong>19:00–21:00</strong><small>아미드호텔 · 예식 종료 후</small></div>
     </div>
     <div class="guide-important"><strong>운현궁은 음식물과 꽃 반입이 금지됩니다.</strong><p>야외 혼례로 좌석이 제한되어 있으니 따뜻하게 입고 오세요. 밝을 때 사진을 남기시려면 조금 일찍 방문해 주세요.</p></div>
     <section class="guide-essentials"><h2>셔틀 안내</h2><div class="guide-lines"><p><strong>김천 · 검역본부</strong> 12:30 출발 예정 / 20:30 귀가</p><p><strong>구미 · 구미시청</strong> 12:30 출발 예정 / 20:30 귀가</p><p><strong>운현궁 ↔ 아미드호텔</strong> 약 15분 간격 셔틀 · 도보 약 10분</p></div><p class="small muted">정확한 승차 위치 및 운행 시간은 추후 공지합니다.</p></section>
@@ -87,8 +89,8 @@ const countNumber=v=>Number.isFinite(Number(v))?Math.max(0,Number(v)):0;
 const sumChoice=(rows,key)=>rows.reduce((n,r)=>n+countNumber(r[key]),0);
 function adminSummary(rows){
  const attending=rows.filter(r=>r.attendance==='참석'), absent=rows.filter(r=>r.attendance==='불참');
- const meals={first:0,second:0,undecided:0};let noMeal=0;
- for(const r of attending){const m=countNumber(r.meals);if(!m){noMeal++;continue}const slot=['first','second'].includes(r.meal_slot)?r.meal_slot:'undecided';meals[slot]+=m}
+ let noMeal=0;
+ for(const r of attending){const m=countNumber(r.meals);if(!m){noMeal++;continue}}
  const persons=sumChoice(attending,'guests'),food=sumChoice(attending,'meals'),checked=sumChoice(attending.filter(r=>r.checked_in),'guests');
  const routes=[['구미 → 서울',sumChoice(attending,'gumi_outbound')],['서울 → 구미',sumChoice(attending,'gumi_return')],['김천 → 서울',sumChoice(attending,'gimcheon_outbound')],['서울 → 김천',sumChoice(attending,'gimcheon_return')]];
  const tile=(label,value,sub)=>'<div class="admin-stat-card"><span>'+label+'</span><strong>'+value+'</strong><small>'+sub+'</small></div>';
@@ -96,26 +98,23 @@ function adminSummary(rows){
  return '<section class="admin-overview"><h2>하객 신청 현황</h2><div class="admin-stat-grid">'+
  tile('전체 응답',rows.length+'건','참석 '+attending.length+'건 · 불참 '+absent.length+'건')+
  tile('참석 예정',persons+'명','도착 처리 '+checked+'명')+
- tile('식사 신청',food+'명','시간 미정 '+meals.undecided+'명')+
+ tile('피로연 신청',food+' / 120명','잔여 '+Math.max(0,120-food)+'명')+
  tile('셔틀 서울행',routes[0][1]+routes[2][1]+'명','귀가 '+(routes[1][1]+routes[3][1])+'명')+'</div>'+
- '<div class="admin-summary-grid"><section class="admin-summary-panel"><h3>식사 시간별</h3>'+
- line('1부 · 15:30~17:30',meals.first+'명')+line('2부 · 18:30~20:30',meals.second+'명')+
- line('식사 시간 미정',meals.undecided+'명')+line('식사 신청 없음',noMeal+'건')+
- '<div class="admin-metric-total">'+line('식사 합계',food+'명')+'</div></section>'+
+ '<div class="admin-summary-grid"><section class="admin-summary-panel"><h3>피로연 · 19:00~21:00</h3>'+line('예약 인원',food+'명')+line('정원','120명')+line('잔여 인원',Math.max(0,120-food)+'명')+line('식사 신청 없음',noMeal+'건')+'</section>'+ 
  '<section class="admin-summary-panel"><h3>셔틀 노선별 · 방향별</h3>'+
  routes.map(([name,n])=>line(name,n+'명')).join('')+
  '<div class="admin-metric-total">'+line('서울행 / 귀가',(routes[0][1]+routes[2][1])+'명 / '+(routes[1][1]+routes[3][1])+'명')+'</div></section></div>'+
- '<p class="small muted">식사 시간은 식사 인원 기준입니다. 왕복 셔틀 이용자는 서울행과 귀가에 각각 집계됩니다. 식사 신청 없음은 응답 건수입니다.</p></section>';
+ '<p class="small muted">피로연 예약은 기존 식사 신청 인원을 모두 합산합니다. 왕복 셔틀 이용자는 서울행과 귀가에 각각 집계됩니다.</p></section>';
 }
 function adminSelections(r){
  if(r.attendance!=='참석')return '<span class="admin-choice">불참</span>';
  const meal=countNumber(r.meals);
- const opts=['참석 '+countNumber(r.guests)+'명','식사 '+meal+'명 · '+(!meal?'식사 없음':({first:'1부',second:'2부',undecided:'미정'})[r.meal_slot]||'미정')];
+ const opts=['참석 '+countNumber(r.guests)+'명','피로연 '+meal+'명 · '+(!meal?'미신청':'19~21시')];
  for(const [name,key] of [['구미 서울행','gumi_outbound'],['구미 귀가','gumi_return'],['김천 서울행','gimcheon_outbound'],['김천 귀가','gimcheon_return']]){if(countNumber(r[key]))opts.push(name+' '+countNumber(r[key])+'명')}
  return opts.map(x=>'<span class="admin-choice">'+esc(x)+'</span>').join('');
 }
-function admin(){if(!db)return '<h1>관리자</h1><p>Supabase 연결 후 관리자 기능을 사용할 수 있습니다.</p>';if(!state.session)return `<div class="admin"><h1 class="heading">관리자 로그인</h1><p class="center small muted">사전에 Supabase에서 생성한 관리자 계정으로 로그인하세요.</p><form id="login-form"><div class="field"><label>이메일</label><input name="email" type="email" required></div><div class="field"><label>비밀번호</label><input name="password" type="password" required></div><p id="login-error" class="error"></p><button class="button">로그인</button></form></div>`;const rows=state.rows,att=rows.filter(x=>x.attendance==='참석');return `<div class="admin"><h1>하객 관리</h1><div class="actions">${button('새로고침','refresh','button secondary')}${button('CSV 다운로드','csv','button secondary')}${button('로그아웃','logout','button secondary')}</div>${adminSummary(rows)}<div class="field"><label>하객 검색</label><input id="admin-search" placeholder="이름 또는 인연"></div><div class="tablewrap"><table><thead><tr><th>성함</th><th>인연</th><th>선택 옵션</th><th>인원</th><th>식사</th><th>식사 시간</th><th>셔틀 합계</th><th>구미 서울행</th><th>구미 귀가</th><th>김천 서울행</th><th>김천 귀가</th><th>도착</th><th>삭제</th></tr></thead><tbody id="admin-body">${rowHtml(rows)}</tbody></table></div><h2 style="margin-top:30px">현장 미등록 하객</h2><form id="walkin-form"><div class="field"><label>성함</label><input name="name" required maxlength="60"></div><div class="field"><label>우리와의 인연</label><select name="relationship"><option>가족</option><option>직장</option><option>학교</option><option>친구</option><option>기타</option></select></div><div class="field"><label>참석 인원</label><input name="guests" type="number" min="1" max="30" value="1" required></div><div class="field"><label>식사 인원</label><input name="meals" type="number" min="0" max="30" value="1" required></div><p id="walkin-error" class="error"></p><button class="button">현장 하객 등록</button></form>${adminFeatures()}</div>`}
-function rowHtml(rows){return rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.relationship)}</td><td><div class="admin-choice-list">${adminSelections(r)}</div></td><td>${r.guests}</td><td>${r.meals}</td><td>${esc(({first:'1부',second:'2부',undecided:'미정',none:'식사 없음'})[r.meal_slot]||'미정')}</td><td>${r.shuttle_count}</td><td>${r.gumi_outbound??0}</td><td>${r.gumi_return??0}</td><td>${r.gimcheon_outbound??0}</td><td>${r.gimcheon_return??0}</td><td><button class="chip ${r.checked_in?'active':''}" data-check="${esc(r.id)}" ${r.attendance!=='참석'?'disabled':''}>${r.checked_in?'도착 ✓':'체크인'}</button></td><td><button type="button" class="chip danger-outline" data-delete-rsvp="${esc(r.id)}">삭제</button></td></tr>`).join('')}
+function admin(){if(!db)return '<h1>관리자</h1><p>Supabase 연결 후 관리자 기능을 사용할 수 있습니다.</p>';if(!state.session)return `<div class="admin"><h1 class="heading">관리자 로그인</h1><p class="center small muted">사전에 Supabase에서 생성한 관리자 계정으로 로그인하세요.</p><form id="login-form"><div class="field"><label>이메일</label><input name="email" type="email" required></div><div class="field"><label>비밀번호</label><input name="password" type="password" required></div><p id="login-error" class="error"></p><button class="button">로그인</button></form></div>`;const rows=state.rows,att=rows.filter(x=>x.attendance==='참석');return `<div class="admin"><h1>하객 관리</h1><div class="actions">${button('새로고침','refresh','button secondary')}${button('CSV 다운로드','csv','button secondary')}${button('로그아웃','logout','button secondary')}</div>${adminSummary(rows)}<div class="field"><label>하객 검색</label><input id="admin-search" placeholder="이름 또는 인연"></div><div class="tablewrap"><table><thead><tr><th>성함</th><th>인연</th><th>선택 옵션</th><th>인원</th><th>식사</th><th>피로연</th><th>셔틀 합계</th><th>구미 서울행</th><th>구미 귀가</th><th>김천 서울행</th><th>김천 귀가</th><th>도착</th><th>삭제</th></tr></thead><tbody id="admin-body">${rowHtml(rows)}</tbody></table></div><h2 style="margin-top:30px">현장 미등록 하객</h2><form id="walkin-form"><div class="field"><label>성함</label><input name="name" required maxlength="60"></div><div class="field"><label>우리와의 인연</label><select name="relationship"><option>가족</option><option>직장</option><option>학교</option><option>친구</option><option>기타</option></select></div><div class="field"><label>참석 인원</label><input name="guests" type="number" min="1" max="30" value="1" required></div><div class="field"><label>식사 인원</label><input name="meals" type="number" min="0" max="30" value="1" required></div><p id="walkin-error" class="error"></p><button class="button">현장 하객 등록</button></form>${adminFeatures()}</div>`}
+function rowHtml(rows){return rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.relationship)}</td><td><div class="admin-choice-list">${adminSelections(r)}</div></td><td>${r.guests}</td><td>${r.meals}</td><td>${esc(Number(r.meals)>0?'19~21시':'식사 없음')}</td><td>${r.shuttle_count}</td><td>${r.gumi_outbound??0}</td><td>${r.gumi_return??0}</td><td>${r.gimcheon_outbound??0}</td><td>${r.gimcheon_return??0}</td><td><button class="chip ${r.checked_in?'active':''}" data-check="${esc(r.id)}" ${r.attendance!=='참석'?'disabled':''}>${r.checked_in?'도착 ✓':'체크인'}</button></td><td><button type="button" class="chip danger-outline" data-delete-rsvp="${esc(r.id)}">삭제</button></td></tr>`).join('')}
 
 function render(){
   const adminMode=state.admin||location.pathname.startsWith('/admin');
@@ -307,7 +306,7 @@ function openPhotoLightbox(source){
   document.addEventListener('keydown',onKey);
   close.focus();
 }
-app.addEventListener('click',async e=>{const b=e.target.closest('button');if(b){if(b.dataset.tab){state.tab=b.dataset.tab;render();window.scrollTo(0,0);return}if(b.dataset.group){const group=b.dataset.group,val=b.dataset.value;if(group==='gumi'||group==='gimcheon')state[group]=val==='yes';else if(group==='rsvpMode'){state.rsvpMode=val;state.submitted=false;}else state[group]=val;render();return}if(b.dataset.counter){const k=b.dataset.counter;state[k]=Math.max(k==='meals'?0:1,Math.min(30,state[k]+Number(b.dataset.delta)));if(k==='guests'){state.meals=Math.min(state.meals,state.guests);state.shuttleCount=Math.min(state.shuttleCount,state.guests);state.gumiCount=Math.min(state.gumiCount,state.guests);state.gimcheonCount=Math.min(state.gimcheonCount,state.guests)}if(k==='meals')state.meals=Math.min(state.meals,state.guests);if(k==='shuttleCount')state.shuttleCount=Math.min(state.shuttleCount,state.guests);if(k==='gumiCount')state.gumiCount=Math.min(state.gumiCount,state.guests);if(k==='gimcheonCount')state.gimcheonCount=Math.min(state.gimcheonCount,state.guests);render();return}if(b.dataset.check){const row=state.rows.find(x=>x.id===b.dataset.check);if(!row)return;const {error}=await db.from('rsvps').update({checked_in:!row.checked_in}).eq('id',row.id);if(error)alert(error.message);else await loadRows();return}if(b.dataset.action){const a=b.dataset.action;if(a==='rsvp'){state.tab='rsvp';render()}else if(a==='guestbook'||a==='archive'){state.tab=a;render()}else if(a==='editLookup'){state.rsvpMode='lookup';render()}else if(a==='newRsvp'){state.rsvpMode='new';state.name='';state.pin='';render()}else if(a==='deleteOwnRsvp'){
+app.addEventListener('click',async e=>{const b=e.target.closest('button');if(b){if(b.dataset.tab){state.tab=b.dataset.tab;if(state.tab==='rsvp')await loadReceptionStatus();render();window.scrollTo(0,0);return}if(b.dataset.group){const group=b.dataset.group,val=b.dataset.value;if(group==='gumi'||group==='gimcheon')state[group]=val==='yes';else if(group==='rsvpMode'){state.rsvpMode=val;state.submitted=false;}else state[group]=val;render();return}if(b.dataset.counter){const k=b.dataset.counter;state[k]=Math.max(k==='meals'?0:1,Math.min(30,state[k]+Number(b.dataset.delta)));if(k==='guests'){state.meals=Math.min(state.meals,state.guests);state.shuttleCount=Math.min(state.shuttleCount,state.guests);state.gumiCount=Math.min(state.gumiCount,state.guests);state.gimcheonCount=Math.min(state.gimcheonCount,state.guests)}if(k==='meals')state.meals=Math.min(state.meals,state.guests);if(k==='shuttleCount')state.shuttleCount=Math.min(state.shuttleCount,state.guests);if(k==='gumiCount')state.gumiCount=Math.min(state.gumiCount,state.guests);if(k==='gimcheonCount')state.gimcheonCount=Math.min(state.gimcheonCount,state.guests);render();return}if(b.dataset.check){const row=state.rows.find(x=>x.id===b.dataset.check);if(!row)return;const {error}=await db.from('rsvps').update({checked_in:!row.checked_in}).eq('id',row.id);if(error)alert(error.message);else await loadRows();return}if(b.dataset.action){const a=b.dataset.action;if(a==='rsvp'){state.tab='rsvp';await loadReceptionStatus();render()}else if(a==='guestbook'||a==='archive'){state.tab=a;render()}else if(a==='editLookup'){state.rsvpMode='lookup';render()}else if(a==='newRsvp'){state.rsvpMode='new';state.name='';state.pin='';render()}else if(a==='deleteOwnRsvp'){
   if(state.loading)return;
   if(rsvpClosed()){alert('응답 삭제 기한이 지났습니다. 신랑·신부에게 연락해 주세요.');return}
   if(!confirm('등록한 참석 응답을 삭제할까요? 삭제 후에는 기존 응답을 불러올 수 없으며 다시 등록해야 합니다.'))return;
@@ -319,6 +318,7 @@ app.addEventListener('click',async e=>{const b=e.target.closest('button');if(b){
   state.loading=true;b.disabled=true;
   const {data:result,error}=await db.functions.invoke('rsvp-v2',{body:{action:'delete',name,pin,turnstileToken:state.turnstileToken}});
   state.loading=false;state.turnstileToken=null;
+  if(!error&&!result?.error)await loadReceptionStatus();
   if(error||result?.error){let message=result?.error;if(!message&&error?.context){try{message=(await error.context.json())?.error}catch{}}
     if(errorNode)errorNode.textContent=message||'삭제하지 못했습니다. 보안 인증 후 다시 시도해 주세요.';
     b.disabled=false;if(window.turnstile){try{window.turnstile.reset()}catch{}}return}
@@ -335,7 +335,7 @@ app.addEventListener('submit',async e=>{e.preventDefault();const form=e.target;i
   const trip=(key,leg)=>state.attendance==='참석'&&state[key]&&(state[key+'Trip']==='round'||state[key+'Trip']===leg)?state[key+'Count']:0;
   const data={name,pin,relationship:state.relationship,attendance:state.attendance,
     guests:state.attendance==='참석'?state.guests:0,meals:state.attendance==='참석'?state.meals:0,
-    meal_slot:state.attendance==='참석'&&state.meals>0?state.mealSlot:'none',
+    meal_slot:state.attendance==='참석'&&state.meals>0?'first':'none',
     gumi_outbound:trip('gumi','out'),gumi_return:trip('gumi','back'),
     gimcheon_outbound:trip('gimcheon','out'),gimcheon_return:trip('gimcheon','back')};
   if(form.id==='rsvp-form'&&data.gumi_outbound+data.gimcheon_outbound>data.guests||
@@ -356,7 +356,7 @@ app.addEventListener('submit',async e=>{e.preventDefault();const form=e.target;i
   if(action==='lookup'){
     const r=result?.record;
     if(!r){errorNode.textContent='응답을 불러오지 못했습니다.';submit.disabled=false;return}
-    Object.assign(state,{name:r.name,pin,relationship:r.relationship,attendance:r.attendance,guests:r.guests||1,meals:r.meals||0,mealSlot:r.meal_slot||(r.meals>0?'undecided':'none'),
+    Object.assign(state,{name:r.name,pin,relationship:r.relationship,attendance:r.attendance,guests:r.guests||1,meals:r.meals||0,mealSlot:'first',
       gumi:!!(r.gumi_outbound||r.gumi_return),gimcheon:!!(r.gimcheon_outbound||r.gimcheon_return),
       gumiCount:Math.max(r.gumi_outbound,r.gumi_return,1),gimcheonCount:Math.max(r.gimcheon_outbound,r.gimcheon_return,1),
       gumiTrip:r.gumi_outbound&&r.gumi_return?'round':r.gumi_outbound?'out':'back',
@@ -364,4 +364,4 @@ app.addEventListener('submit',async e=>{e.preventDefault();const form=e.target;i
   }else{state.editSaved=action==='update';state.rsvpMode='done'}
   render();window.scrollTo(0,0);
 }else if(form.id==='login-form'){const fd=new FormData(form);const {data,error}=await db.auth.signInWithPassword({email:fd.get('email'),password:fd.get('password')});if(error){form.querySelector('#login-error').textContent='로그인 실패: 이메일 또는 비밀번호를 확인해 주세요.';return}state.session=data.session;await refreshFeatures(true);await loadRows()}else if(form.id==='walkin-form'){const fd=new FormData(form);const guests=Number(fd.get('guests')),meals=Number(fd.get('meals'));if(meals>guests){form.querySelector('#walkin-error').textContent='식사 인원은 참석 인원보다 많을 수 없습니다.';return}const {error}=await db.from('rsvps').insert({name:String(fd.get('name')).trim(),relationship:fd.get('relationship'),attendance:'참석',guests,meals,shuttle_count:0,checked_in:true});if(error){form.querySelector('#walkin-error').textContent='등록 실패: '+error.message;return}await loadRows()}});
-async function init(){state.admin=location.pathname.startsWith('/admin');if(db){const {data}=await db.auth.getSession();state.session=data.session;db.auth.onAuthStateChange((_event,session)=>{state.session=session});await refreshFeatures(state.admin&&!!state.session);if(state.admin&&state.session){await loadRows();return}}render()};init();
+async function init(){state.admin=location.pathname.startsWith('/admin');if(db){const {data}=await db.auth.getSession();state.session=data.session;db.auth.onAuthStateChange((_event,session)=>{state.session=session});await refreshFeatures(state.admin&&!!state.session);if(state.admin&&state.session){await loadRows();return}await loadReceptionStatus()}render()};init();
