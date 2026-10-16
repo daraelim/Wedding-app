@@ -141,3 +141,22 @@
 .account-copy{margin:14px 0 0;min-height:43px}
 .account-member+.account-member{border-top:1px solid #eee1db;margin-top:18px;padding-top:18px}
 .account-relation{font-size:14px;font-weight:600;color:#6f514e;margin:0 0 6px}
+
+/* Readability pass for guest guidance, especially older guests */
+.simple-guide .directions-title{font-size:32px;line-height:1.45}
+.simple-guide .directions-intro{font-size:16px;line-height:1.8}
+.simple-guide .guide-key{padding:19px 14px}
+.simple-guide .guide-key span{font-size:16px;font-weight:600}
+.simple-guide .guide-key strong{font-size:29px}
+.simple-guide .guide-key small{font-size:15px;line-height:1.65}
+.simple-guide .guide-important{font-size:16px;line-height:1.8}
+.simple-guide .guide-essentials h2{font-size:22px}
+.simple-guide .guide-lines p{font-size:16px;line-height:1.8}
+.simple-guide .guide-essentials .small{font-size:14px;line-height:1.7}
+.simple-guide .guest-notice summary{font-size:16px;line-height:1.6;min-height:48px}
+.simple-guide .guest-notice time{font-size:12px}
+.simple-guide .guest-notice p{font-size:15px;line-height:1.85}
+.simple-guide .guide-extra>summary{font-size:17px;line-height:1.8}
+.simple-guide .directions-note{font-size:15px;line-height:1.8}
+.simple-guide .directions-venue .directions-address{font-size:15px}
+@media(max-width:360px){.simple-guide .guide-key strong{font-size:26px}.simple-guide .guide-lines p{font-size:15px}}
