@@ -78,3 +78,24 @@
 .directions-info-row p{font-size:13px;color:#816d66;line-height:1.9;margin:0 0 5px}
 .directions-end{text-align:center;color:#ae8a88;font-style:italic;font-size:13px;margin:34px 0 8px}
 @media(max-width:360px){.directions-journey{padding:19px 15px}.directions-title{font-size:27px}.directions-map{height:200px}}
+
+/* Guest guide, notice board, and meal sessions */
+.guest-section{margin:24px 0;padding:21px 17px;background:#fffaf7;border:1px solid #eadbd5;border-radius:14px;line-height:1.85;word-break:keep-all}
+.guest-section h2{font-size:19px;line-height:1.5;margin:6px 0 12px;color:#604743}
+.guest-section p{font-size:13px;line-height:1.85}
+.guest-notice{border-top:1px solid #e9ddd7;padding:11px 0}
+.guest-notice:last-child{border-bottom:1px solid #e9ddd7}
+.guest-notice summary{display:flex;justify-content:space-between;gap:12px;cursor:pointer;font-size:13px;font-weight:600;align-items:baseline;list-style:none}
+.guest-notice summary::-webkit-details-marker{display:none}
+.guest-notice summary::before{content:'+';color:#b9838c;font-size:17px;font-weight:400}
+.guest-notice[open] summary::before{content:'−'}
+.guest-notice summary span{flex:1}
+.guest-notice time{font-family:'Noto Sans KR',sans-serif;font-size:10px;color:#997e77;white-space:nowrap}
+.guest-notice p{margin:11px 0 0;color:#6e5751;white-space:pre-line}
+.guest-schedule p{margin:0;padding:10px 0;border-bottom:1px solid #eddfd9;display:flex;gap:15px;align-items:baseline}
+.guest-schedule p:last-child{border-bottom:0}
+.guest-schedule b{font-family:'Noto Sans KR',sans-serif;color:#9e7077;min-width:91px;flex-shrink:0;font-size:12px}
+.guest-heritage strong{color:#984d55}
+.meal-choice{margin:16px 0}
+.meal-choice .chips{margin-top:12px}
+.meal-choice .chip{min-height:42px}
