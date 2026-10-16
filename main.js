@@ -44,7 +44,7 @@ function rsvp(){
   const relationship=`<div class="field"><label>우리와의 인연</label><div class="chips">${['가족','직장','학교','친구','기타'].map(v=>chip(v,'relationship',v,state.relationship===v)).join('')}</div></div>`;
   const attendance=`<div class="field"><label>참석 여부</label><div class="chips">${chip('참석합니다','attendance','참석',state.attendance==='참석')}${chip('참석이 어렵습니다','attendance','불참',state.attendance==='불참')}</div></div>`;
   const cap=state.receptionStatus;
-  const mealChoice=`<div class="panel meal-choice"><b>아미드호텔 피로연 · 19:00~21:00</b><p class="small muted">전통혼례가 끝난 뒤 피로연은 1회만 진행합니다.</p><p id="reception-capacity" class="reception-capacity" aria-live="polite">${cap?`${cap.reserved}명 / ${cap.capacity}명 신청 · 잔여 ${cap.remaining}명`:'예약 현황 불러오는 중…'}</p><p class="small muted">식사 인원이 0명이면 피로연 신청 인원에 포함되지 않습니다. 정원은 120명입니다.</p></div>`;
+  const mealChoice=`<div class="panel meal-choice"><b>아미드호텔 피로연 · 19:00~21:00</b><p class="small muted">전통혼례가 끝난 뒤 피로연은 1부(19:00~21:00)만 진행합니다.</p><p id="reception-capacity" class="reception-capacity" aria-live="polite">${cap?`${cap.reserved}명 / ${cap.capacity}명 신청 · 잔여 ${cap.remaining}명`:'예약 현황 불러오는 중…'}</p><p class="small muted">식사 인원이 0명이면 피로연 신청 인원에 포함되지 않습니다. 정원은 120명입니다.</p></div>`;
   const details=state.attendance==='참석'?
     count('guests','함께 오시는 분 포함 참석 인원')+count('meals','아미드호텔 피로연 식사 인원',0)+mealChoice+routeFields('gumi','구미 출발')+routeFields('gimcheon','김천 출발'):'';
   const notice='<div class="panel notice">11월 6일까지 이름과 숫자 4자리 비밀번호로 응답을 수정할 수 있습니다. 마감 후에는 신랑·신부에게 따로 연락해 주세요.<br>연락처는 수집하지 않으며 참석 확인과 행사 운영 목적으로만 정보를 사용합니다. 비밀번호는 암호화된 검증값으로 보관합니다.</div>';
@@ -66,7 +66,7 @@ function guide(){
     <div class="guide-summary">
       
       <div class="guide-key"><span>전통혼례</span><strong>18:00</strong><small>운현궁 · 17:50 사물놀이</small></div>
-      <div class="guide-key"><span>피로연 · 1회</span><strong>19:00–21:00</strong><small>아미드호텔 · 예식 종료 후</small></div>
+      <div class="guide-key"><span>피로연 · 1부</span><strong>19:00–21:00</strong><small>아미드호텔 · 예식 종료 후</small></div>
     </div>
     <div class="guide-important"><strong>운현궁은 음식물과 꽃 반입이 금지됩니다.</strong><p>야외 혼례로 좌석이 제한되어 있으니 따뜻하게 입고 오세요. 밝을 때 사진을 남기시려면 조금 일찍 방문해 주세요.</p></div>
     <section class="guide-essentials"><h2>셔틀 안내</h2><div class="guide-lines"><p><strong>김천 · 검역본부</strong> 12:30 출발 예정 / 귀가 시간 추후 안내</p><p><strong>구미 · 구미시청</strong> 12:30 출발 예정 / 귀가 시간 추후 안내</p><p><strong>운현궁 ↔ 아미드호텔</strong> 약 15분 간격 셔틀 · 도보 약 10분</p></div><p class="small muted">정확한 승차 위치와 귀가 버스 시간은 확정 후 공지합니다.</p></section>
