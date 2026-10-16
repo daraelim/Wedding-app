@@ -99,3 +99,45 @@
 .meal-choice{margin:16px 0}
 .meal-choice .chips{margin-top:12px}
 .meal-choice .chip{min-height:42px}
+
+/* Simple guest guide: primary schedule first, optional details collapsed */
+.simple-guide .guide-summary{display:grid;gap:10px;margin:24px 0}
+.simple-guide .guide-key{background:#fffaf7;border:1px solid #eadbd5;border-radius:12px;padding:18px 17px;display:flex;flex-direction:column;gap:3px;text-align:center}
+.simple-guide .guide-key span{font-size:12px;color:#987a76}
+.simple-guide .guide-key strong{font-family:'Noto Sans KR',sans-serif;font-size:25px;letter-spacing:.02em;color:#735353}
+.simple-guide .guide-key small{font-size:12px;color:#846e69}
+.simple-guide .guide-important{padding:18px;border-radius:12px;background:#f8eeeb;line-height:1.8;font-size:13px;margin:22px 0;word-break:keep-all}
+.simple-guide .guide-important strong{color:#874f59}
+.simple-guide .guide-important p{margin:6px 0 0}
+.simple-guide .guide-essentials{margin:25px 0}
+.simple-guide .guide-essentials h2{font-size:18px;margin:0 0 12px}
+.simple-guide .guide-lines{border-top:1px solid #e9dad4}
+.simple-guide .guide-lines p{font-size:13px;line-height:1.85;border-bottom:1px solid #e9dad4;padding:13px 0;margin:0}
+.simple-guide .guide-lines strong{display:block}
+.simple-guide .guest-notice summary{padding:3px 0}
+.simple-guide .guide-extra{border:1px solid #eadbd5;border-radius:12px;background:#fffaf7;padding:16px;margin-top:24px}
+.simple-guide .guide-extra>summary{cursor:pointer;list-style:none;font-size:14px;font-weight:600}
+.simple-guide .guide-extra>summary::-webkit-details-marker{display:none}
+.simple-guide .guide-extra>summary:after{content:'⌄';float:right;color:#ad7d83}
+.simple-guide .guide-extra[open]>summary{padding-bottom:10px;border-bottom:1px solid #eadbd5}
+.simple-guide .directions-venue{margin-top:20px}
+/* Reusable expandable gift account style */
+.accounts-overline{text-align:center;color:#a07c7c;letter-spacing:.19em;font:11px 'Noto Sans KR',sans-serif;margin:10px 0}
+.accounts-hint{font-size:12px;color:#927d77;line-height:1.75;margin:18px 0 21px}
+.accounts-list{display:flex;flex-direction:column;gap:11px;margin-bottom:30px}
+.account-fold{border:1px solid #e9d9d2;border-radius:13px;background:#fffaf7;overflow:hidden}
+.account-fold summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:62px;padding:14px 17px}
+.account-fold summary::-webkit-details-marker{display:none}
+.account-name{font-size:15px;font-weight:600;color:#503b36}
+.account-toggle{font:12px 'Noto Sans KR',sans-serif;display:flex;align-items:center;gap:8px;color:#977478;white-space:nowrap}
+.account-chevron{display:inline-block;font-size:20px;transition:transform .18s ease}
+.account-fold[open] .account-chevron{transform:rotate(180deg)}
+.account-fold[open] .account-toggle-label{font-size:0}
+.account-fold[open] .account-toggle-label:after{content:'접기';font-size:12px}
+.account-content{border-top:1px solid #eee1db;padding:16px 17px 19px;background:#fffdfb}
+.account-bank{line-height:1.9;color:#795d59;font-size:14px;overflow-wrap:anywhere}
+.account-bank strong{font-weight:600;color:#503b36}
+.account-holder{font-size:13px;color:#937b74;margin-top:2px}
+.account-copy{margin:14px 0 0;min-height:43px}
+.account-member+.account-member{border-top:1px solid #eee1db;margin-top:18px;padding-top:18px}
+.account-relation{font-size:14px;font-weight:600;color:#6f514e;margin:0 0 6px}
