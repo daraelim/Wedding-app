@@ -205,3 +205,24 @@
 .admin-choice{display:inline-block;white-space:nowrap;padding:5px 8px;border-radius:7px;background:#f7edeb;color:#684d49;font-size:12px;line-height:1.5}
 @media(max-width:680px){.admin-summary-grid{grid-template-columns:1fr}.admin-overview h2{font-size:19px}.admin-stat-card strong{font-size:22px}}
 @media(max-width:350px){.admin-stat-grid{grid-template-columns:1fr}}
+
+/* Shuttle boarding administrator tab */
+.admin-view-tabs{display:flex;gap:9px;flex-wrap:wrap;margin:17px 0 22px}
+.admin-view-tabs .chip{min-height:44px;padding:10px 16px}
+.shuttle-admin{max-width:760px}
+.shuttle-admin h2{font-size:22px;margin:14px 0 5px}
+.shuttle-label{display:block;font-weight:600;margin:20px 0 7px}
+.shuttle-admin select,.shuttle-toolbar input{width:100%;min-height:46px;border:1px solid #e4d2cc;border-radius:9px;padding:9px 12px;font:inherit;background:white;box-sizing:border-box}
+.shuttle-totals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:16px 0}
+.shuttle-totals>div{background:#fffaf7;border:1px solid #eadbd5;border-radius:12px;padding:15px 10px;display:flex;flex-direction:column;gap:5px}
+.shuttle-totals small{font-size:12px;color:#816762}
+.shuttle-totals strong{font-size:23px;color:#684c49}
+.shuttle-toolbar{display:flex;gap:9px;margin:18px 0}
+.shuttle-toolbar input{flex:1;min-width:0}
+.shuttle-toolbar button{white-space:nowrap}
+.shuttle-passenger{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #eadbd5;padding:15px 3px}
+.shuttle-passenger p{margin:5px 0 0}
+.shuttle-stepper{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.shuttle-stepper button{width:39px;height:39px;border:1px solid #d5bdb7;border-radius:8px;background:#fffaf7;font-size:22px;color:#684c49}
+.shuttle-stepper button:disabled{opacity:.35}
+@media(max-width:400px){.shuttle-totals strong{font-size:19px}.shuttle-stepper{gap:5px}.shuttle-stepper button{width:34px;height:36px}}
