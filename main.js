@@ -27,7 +27,7 @@ const chip=(label,group,value,selected)=>`<button type="button" class="chip ${se
 const count=(key,label,min=1)=>`<div class="field"><label>${label}</label><div class="stepper"><button type="button" data-counter="${key}" data-delta="-1">−</button><span>${state[key]}명</span><button type="button" data-counter="${key}" data-delta="1">+</button></div></div>`;
 function home(){return `<section class="home-invitation"><div class="home-overline">Together, from now on</div><div class="home-hero-wrap">${C.heroVideo?`<video class="hero hero-video" src="${esc(C.heroVideo)}" poster="${esc(C.photos[0] || '')}" autoplay muted loop playsinline webkit-playsinline preload="metadata" aria-label="다래와 민우의 초대 영상"></video>`:C.photos.length?`<img class="hero" src="${esc(C.photos[0])}" alt="우리의 한복 스냅">`:'<div class="placeholder">우리의 한복 스냅사진을 준비하고 있습니다.</div>'}</div><div class="home-identity"><div class="home-label">INVITATION</div><h1 class="home-heading">우리, 혼례합니다</h1><div class="home-names">${esc(C.names)}</div><p class="home-detail">${esc(C.date)}<br>${esc(C.ceremony.time)} · ${esc(C.ceremony.name)}</p></div>${C.invitationVideo?`<div class="panel"><iframe title="초대영상" src="${esc(C.invitationVideo)}" width="100%" height="220" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`:''}<div class="home-divider" aria-hidden="true"></div><p class="home-message">저희 두 사람의 새로운 시작에<br>함께하시어 축복해 주시기 바랍니다.</p>${button('참석 여부 알려주기 →','rsvp','button secondary')}</section>`}
 function gallery(){return `<div class="center small muted" style="letter-spacing:3px">OUR MOMENTS</div><h1 class="heading">우리의 순간들</h1><div class="flourish">─ ✿ ─</div><p class="center intro muted">다래와 민우의 소중한 기록<br>사진을 누르면 크게 볼 수 있어요.</p>${C.galleryPhotos.length?`<div class="gallery-grid">${C.galleryPhotos.map((p,i)=>`<button type="button" class="gallery-item" data-photo="${esc(p)}" aria-label="사진 ${i+1} 크게 보기"><img src="${esc(p)}" alt="한복 스냅 ${i+1}" loading="lazy"></button>`).join('')}</div>`:'<div class="panel center">사진을 준비하고 있습니다.</div>'}`}
-async function loadReceptionStatus(){if(!db)return;const {data,error}=await db.rpc('reception_capacity_status');if(!error&&data){state.receptionStatus=data;const display=document.querySelector('#reception-capacity');if(display)display.textContent=`${data.reserved}명 / ${data.capacity}명 신청 · 잔여 ${data.remaining}명`;}}
+async function loadReceptionStatus(){if(!db)return;const {data,error}=await db.rpc('reception_capacity_status');if(!error&&data){state.receptionStatus=data;}}
 const rsvpClosed=()=>Date.now()>new Date(C.rsvpDeadline+'T23:59:59+09:00').getTime();
 const routeFields=(key,label)=>`<div class="panel shuttle-route"><b>${label} 셔틀버스 이용</b><div class="chips">${chip('이용 안 함',key,'no',!state[key])}${chip('이용함',key,'yes',state[key])}</div>${state[key]?`<div class="field"><label>이용 구간</label><div class="chips">${chip('왕복',key+'Trip','round',state[key+'Trip']==='round')}${chip('서울행 편도',key+'Trip','out',state[key+'Trip']==='out')}${chip('귀가 편도',key+'Trip','back',state[key+'Trip']==='back')}</div></div>${count(key+'Count','이용 인원')}`:''}</div>`;
 const pinField=()=>`<div class="field"><label for="guest-pin">숫자 4자리 비밀번호</label><input id="guest-pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" minlength="4" required autocomplete="off" value="${esc(state.pin)}" placeholder="숫자 4자리"><p class="small muted">나중에 응답을 수정할 때 필요합니다. 잊지 않도록 기억해 주세요.</p></div>`;
@@ -44,7 +44,7 @@ function rsvp(){
   const relationship=`<div class="field"><label>우리와의 인연</label><div class="chips">${['가족','직장','학교','친구','기타'].map(v=>chip(v,'relationship',v,state.relationship===v)).join('')}</div></div>`;
   const attendance=`<div class="field"><label>참석 여부</label><div class="chips">${chip('참석합니다','attendance','참석',state.attendance==='참석')}${chip('참석이 어렵습니다','attendance','불참',state.attendance==='불참')}</div></div>`;
   const cap=state.receptionStatus;
-  const mealChoice=`<div class="panel meal-choice"><b>신라스테이 광화문 · 피로연 · 18:00~21:00</b><p id="reception-capacity" class="reception-capacity" aria-live="polite">${cap?`${cap.reserved}명 / ${cap.capacity}명 신청 · 잔여 ${cap.remaining}명`:'예약 현황 불러오는 중…'}</p></div>`;
+  const mealChoice=`<div class="panel meal-choice"><b>신라스테이 광화문 · 피로연 · 18:00~21:00</b></div>`;
   const details=state.attendance==='참석'?
     count('guests','함께 오시는 분 포함 참석 인원')+count('meals','신라스테이 광화문 · 피로연 식사 인원',0)+mealChoice+routeFields('gumi','구미 출발')+routeFields('gimcheon','김천 출발'):'';
   const notice='<div class="panel notice">11월 6일까지 이름과 숫자 4자리 비밀번호로 응답을 수정할 수 있습니다. 마감 후에는 신랑·신부에게 따로 연락해 주세요.<br>연락처는 수집하지 않으며 참석 확인과 행사 운영 목적으로만 정보를 사용합니다. 비밀번호는 암호화된 검증값으로 보관합니다.</div>';
@@ -65,10 +65,10 @@ function guide(){
     <div class="guide-summary">
       
       <div class="guide-key"><span>전통혼례</span><strong>18:00</strong><small>운현궁 · 17:50 사물놀이</small></div>
-      <div class="guide-key"><span>피로연</span><strong>18:00–21:00</strong><small>신라스테이 광화문</small></div>
+      <div class="guide-key"><span>피로연</span><strong>18:00–21:00</strong><small>신라스테이 광화문 · 혼례 후 이동</small></div>
     </div>
     <section class="guide-essentials"><h2>유의사항</h2><div class="guide-lines"><p>음식물·꽃 반입 금지</p><p>야외 예식 · 좌석 제한</p><p>따뜻한 복장 권장</p></div></section>
-    <section class="guide-essentials"><h2>교통 안내</h2><div class="guide-lines"><p><strong>김천 · 검역본부</strong> 12:30 출발 예정</p><p><strong>구미 · 구미시청</strong> 12:30 출발 예정</p><p><strong>운현궁</strong> 대중교통·셔틀버스 이용 권장</p><p><strong>서울역 출발</strong> 지하철 1호선 → 종로3가역 하차 → 도보 이동</p><p><strong>현장 셔틀</strong> 운현궁 ↔ 신라스테이 광화문 왕복 운행</p><p><strong>지역 셔틀 귀가</strong> 20:30 출발 예정</p></div></section>
+    <section class="guide-essentials"><h2>교통 안내</h2><div class="guide-lines"><p><strong>김천 · 검역본부</strong> 12:30 출발 예정</p><p><strong>구미 · 구미시청</strong> 12:30 출발 예정</p><p><strong>운현궁</strong> 대중교통·셔틀버스 이용 권장</p><p><strong>서울역 출발</strong> 1호선 → 종로3가역 → 3호선 환승 → 안국역 4번 출구 → 도보 이동</p><p><strong>현장 셔틀</strong> 운현궁 ↔ 신라스테이 광화문 왕복 운행 · 승차 위치 추후 안내</p><p><strong>지역 셔틀 귀가</strong> 20:30 출발 예정</p></div></section>
     
     <details class="guide-extra"><summary>오시는 길 · 지도 · 주차 안내</summary>
       ${venueSection('01','전통혼례',C.ceremony)}
@@ -97,9 +97,9 @@ function adminSummary(rows){
  return '<section class="admin-overview"><h2>하객 신청 현황</h2><div class="admin-stat-grid">'+
  tile('전체 응답',rows.length+'건','참석 '+attending.length+'건 · 불참 '+absent.length+'건')+
  tile('참석 예정',persons+'명','도착 처리 '+checked+'명')+
- tile('피로연 신청',food+' / 120명','잔여 '+Math.max(0,120-food)+'명')+
+ tile('피로연 신청',food+'명','식사 신청 인원')+
  tile('셔틀 서울행',routes[0][1]+routes[2][1]+'명','귀가 '+(routes[1][1]+routes[3][1])+'명')+'</div>'+
- '<div class="admin-summary-grid"><section class="admin-summary-panel"><h3>피로연 · 18:00~21:00</h3>'+line('예약 인원',food+'명')+line('정원','120명')+line('잔여 인원',Math.max(0,120-food)+'명')+line('식사 신청 없음',noMeal+'건')+'</section>'+ 
+ '<div class="admin-summary-grid"><section class="admin-summary-panel"><h3>피로연 · 18:00~21:00</h3>'+line('예약 인원',food+'명')+line('운영 정원','130명')+line('잔여 인원',Math.max(0,130-food)+'명')+line('식사 신청 없음',noMeal+'건')+'</section>'+ 
  '<section class="admin-summary-panel"><h3>셔틀 노선별 · 방향별</h3>'+
  routes.map(([name,n])=>line(name,n+'명')).join('')+
  '<div class="admin-metric-total">'+line('서울행 / 귀가',(routes[0][1]+routes[2][1])+'명 / '+(routes[1][1]+routes[3][1])+'명')+'</div></section></div>'+
