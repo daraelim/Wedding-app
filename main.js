@@ -25,7 +25,7 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const button=(label,action,cls='button')=>`<button class="${cls}" data-action="${action}">${label}</button>`;
 const chip=(label,group,value,selected)=>`<button type="button" class="chip ${selected?'active':''}" data-group="${group}" data-value="${esc(value)}">${esc(label)}</button>`;
 const count=(key,label,min=1)=>`<div class="field"><label>${label}</label><div class="stepper"><button type="button" data-counter="${key}" data-delta="-1">−</button><span>${state[key]}명</span><button type="button" data-counter="${key}" data-delta="1">+</button></div></div>`;
-function home(){return `<section class="home-invitation"><div class="home-overline">Together, from now on</div><div class="home-hero-wrap">${C.heroVideo?`<video class="hero hero-video" src="${esc(C.heroVideo)}" poster="${esc(C.photos[0] || '')}" autoplay muted loop playsinline webkit-playsinline preload="metadata" aria-label="다래와 민우의 초대 영상"></video>`:C.photos.length?`<img class="hero" src="${esc(C.photos[0])}" alt="우리의 한복 스냅">`:'<div class="placeholder">우리의 한복 스냅사진을 준비하고 있습니다.</div>'}</div><div class="home-identity"><div class="home-label">INVITATION</div><h1 class="home-heading">우리, 혼례합니다</h1><div class="home-names">${esc(C.names)}</div><p class="home-detail">${esc(C.date)}<br>${esc(C.ceremony.time)} · ${esc(C.ceremony.name)}</p></div>${C.invitationVideo?`<div class="panel"><iframe title="초대영상" src="${esc(C.invitationVideo)}" width="100%" height="220" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`:''}<div class="home-divider" aria-hidden="true"></div><p class="home-message">저희 두 사람의 새로운 시작에<br>함께하시어 축복해 주시기 바랍니다.</p>${button('참석 여부 알려주기 →','rsvp','button secondary')}</section>`}
+function home(){return `<section class="home-invitation"><div class="home-overline">Together, from now on</div><div class="home-hero-wrap">${C.heroVideo?`<video class="hero hero-video" src="${esc(C.heroVideo)}" poster="${esc(C.photos[0] || '')}" autoplay muted loop playsinline webkit-playsinline preload="auto" aria-label="다래와 민우의 초대 영상"></video>`:C.photos.length?`<img class="hero" src="${esc(C.photos[0])}" alt="우리의 한복 스냅">`:'<div class="placeholder">우리의 한복 스냅사진을 준비하고 있습니다.</div>'}</div><div class="home-identity"><div class="home-label">INVITATION</div><h1 class="home-heading">우리, 혼례합니다</h1><div class="home-names">${esc(C.names)}</div><p class="home-detail">${esc(C.date)}<br>${esc(C.ceremony.time)} · ${esc(C.ceremony.name)}</p></div>${C.invitationVideo?`<div class="panel"><iframe title="초대영상" src="${esc(C.invitationVideo)}" width="100%" height="220" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`:''}<div class="home-divider" aria-hidden="true"></div><p class="home-message">저희 두 사람의 새로운 시작에<br>함께하시어 축복해 주시기 바랍니다.</p>${button('참석 여부 알려주기 →','rsvp','button secondary')}</section>`}
 function gallery(){return `<div class="center small muted" style="letter-spacing:3px">OUR MOMENTS</div><h1 class="heading">우리의 순간들</h1><div class="flourish">─ ✿ ─</div><p class="center intro muted">다래와 민우의 소중한 기록<br>사진을 누르면 크게 볼 수 있어요.</p>${C.galleryPhotos.length?`<div class="gallery-grid">${C.galleryPhotos.map((p,i)=>`<button type="button" class="gallery-item" data-photo="${esc(p)}" aria-label="사진 ${i+1} 크게 보기"><img src="${esc(p)}" alt="한복 스냅 ${i+1}" loading="lazy"></button>`).join('')}</div>`:'<div class="panel center">사진을 준비하고 있습니다.</div>'}`}
 async function loadReceptionStatus(){if(!db)return;const {data,error}=await db.rpc('reception_capacity_status');if(!error&&data){state.receptionStatus=data;}}
 const rsvpClosed=()=>Date.now()>new Date(C.rsvpDeadline+'T23:59:59+09:00').getTime();
@@ -188,24 +188,34 @@ function startHeroVideo(){
   video.playsInline=true;
   video.setAttribute('muted','');
   video.setAttribute('playsinline','');
+  video.setAttribute('webkit-playsinline','');
+  const showButton=()=>{
+    if(!video.isConnected||video.parentElement?.querySelector('.hero-play-button'))return;
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='hero-play-button';
+    button.textContent='▶ 영상 재생';
+    button.setAttribute('aria-label','초대 영상 재생');
+    button.style.cssText='position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:3;padding:12px 20px;border:1px solid #fff;border-radius:24px;background:rgba(0,0,0,.6);color:#fff;font-size:15px;cursor:pointer';
+    video.parentElement.style.position='relative';
+    button.addEventListener('click',()=>{
+      video.muted=true;
+      const result=video.play();
+      if(result?.then)result.then(()=>button.remove()).catch(()=>{button.textContent='▶ 다시 재생';});
+    });
+    video.parentElement.append(button);
+  };
   const attempt=()=>{
     if(!video.isConnected||document.hidden)return;
     const result=video.play();
-    if(result&&typeof result.then==='function')result.then(()=>{
-      video.parentElement?.querySelector('.hero-play-button')?.remove();
-    }).catch(()=>{
-      if(!video.isConnected||video.parentElement?.querySelector('.hero-play-button'))return;
-      const button=document.createElement('button');
-      button.type='button';
-      button.className='hero-play-button';
-      button.textContent='▶ 영상 재생';
-      button.setAttribute('aria-label','초대 영상 재생');
-      button.addEventListener('click',()=>video.play().then(()=>button.remove()).catch(()=>{}));
-      video.parentElement.append(button);
-    });
+    if(result?.then)result.then(()=>video.parentElement?.querySelector('.hero-play-button')?.remove()).catch(showButton);
+    else if(video.paused)showButton();
   };
   video.addEventListener('loadeddata',attempt,{once:true});
+  video.addEventListener('canplay',attempt,{once:true});
+  video.addEventListener('error',showButton,{once:true});
   attempt();
+  if(video.paused)showButton();
 }
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)startHeroVideo()});
 function render(){
