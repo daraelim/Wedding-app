@@ -68,7 +68,7 @@ function guide(){
       <div class="guide-key"><span>피로연</span><strong>18:00–21:00</strong><small>신라스테이 광화문</small></div>
     </div>
     <section class="guide-essentials"><h2>유의사항</h2><div class="guide-lines"><p>음식물·꽃 반입 금지</p><p>야외 예식 · 좌석 제한</p><p>따뜻한 복장 권장</p></div></section>
-    <section class="guide-essentials"><h2>셔틀 안내</h2><div class="guide-lines"><p><strong>김천 · 검역본부</strong> 12:30 출발 예정</p><p><strong>구미 · 구미시청</strong> 12:30 출발 예정</p><p><strong>귀가 및 현장 이동</strong> 추후 공지</p></div></section>
+    <section class="guide-essentials"><h2>교통 안내</h2><div class="guide-lines"><p><strong>김천 · 검역본부</strong> 12:30 출발 예정</p><p><strong>구미 · 구미시청</strong> 12:30 출발 예정</p><p><strong>운현궁</strong> 대중교통·셔틀버스 이용 권장</p><p><strong>서울역 출발</strong> 지하철 1호선 → 종로3가역 하차 → 도보 이동</p><p><strong>현장 셔틀</strong> 운현궁 ↔ 신라스테이 광화문 왕복 운행</p><p><strong>지역 셔틀 귀가</strong> 출발 시간 추후 공지</p></div></section>
     
     <details class="guide-extra"><summary>오시는 길 · 지도 · 주차 안내</summary>
       ${venueSection('01','전통혼례',C.ceremony)}
