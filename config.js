@@ -2,7 +2,7 @@ export const CONFIG = {
   names: '다래 · 민우',
   date: '2026년 11월 14일 토요일',
   ceremony: {name:'운현궁',time:'오후 6시',address:'서울 종로구 삼일대로 464'},
-  reception: {name:'신라스테이 광화문',time:'오후 6시 ~ 9시 (18:00–21:00)',address:'서울 종로구 삼봉로 71'},
+  reception: {name:'신라스테이 광화문',time:'18:00–21:00',address:'서울 종로구 삼봉로 71'},
   rsvpDeadline: '2026-11-06', // Korea time, 23:59:59 inclusive
   shuttleDetails: '김천 검역본부·구미 구미시청 낮 12시 30분 출발 / 양 지역 귀가 셔틀 출발 시간 추후 확정 (정확한 승차 지점 추후 공지)',
   notices: [
