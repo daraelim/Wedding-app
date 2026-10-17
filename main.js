@@ -20,7 +20,7 @@ const app=document.querySelector('#app');
 initFeatures(db,C);
 window.addEventListener('wedding-features-changed',()=>render());
 window.addEventListener('wedding-rsvp-deleted',()=>loadRows());
-const state={tab:'home',relationship:'가족',attendance:'참석',shuttle:false,guests:1,meals:1,shuttleCount:1,submitted:false,name:'',pin:'',rsvpMode:'new',gumi:false,gimcheon:false,gumiTrip:'round',gimcheonTrip:'round',gumiCount:1,gimcheonCount:1,mealSlot:'first',receptionStatus:null,admin:false,session:null,rows:[],loading:false,turnstileToken:null};
+const state={tab:'home',relationship:'가족',attendance:'참석',shuttle:false,guests:1,meals:1,shuttleCount:1,submitted:false,name:'',pin:'',rsvpMode:'new',gumi:false,gimcheon:false,gumiTrip:'round',gimcheonTrip:'round',gumiCount:1,gimcheonCount:1,mealSlot:'first',receptionStatus:null,adminPage:'guests',shuttleRoute:'gumi_outbound',shuttleSearch:'',boardingRows:[],boardingAvailable:true,boardingBusy:false,admin:false,session:null,rows:[],loading:false,turnstileToken:null};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const button=(label,action,cls='button')=>`<button class="${cls}" data-action="${action}">${label}</button>`;
 const chip=(label,group,value,selected)=>`<button type="button" class="chip ${selected?'active':''}" data-group="${group}" data-value="${esc(value)}">${esc(label)}</button>`;
@@ -113,7 +113,63 @@ function adminSelections(r){
  for(const [name,key] of [['구미 서울행','gumi_outbound'],['구미 귀가','gumi_return'],['김천 서울행','gimcheon_outbound'],['김천 귀가','gimcheon_return']]){if(countNumber(r[key]))opts.push(name+' '+countNumber(r[key])+'명')}
  return opts.map(x=>'<span class="admin-choice">'+esc(x)+'</span>').join('');
 }
-function admin(){if(!db)return '<h1>관리자</h1><p>Supabase 연결 후 관리자 기능을 사용할 수 있습니다.</p>';if(!state.session)return `<div class="admin"><h1 class="heading">관리자 로그인</h1><p class="center small muted">사전에 Supabase에서 생성한 관리자 계정으로 로그인하세요.</p><form id="login-form"><div class="field"><label>이메일</label><input name="email" type="email" required></div><div class="field"><label>비밀번호</label><input name="password" type="password" required></div><p id="login-error" class="error"></p><button class="button">로그인</button></form></div>`;const rows=state.rows,att=rows.filter(x=>x.attendance==='참석');return `<div class="admin"><h1>하객 관리</h1><div class="actions">${button('새로고침','refresh','button secondary')}${button('CSV 다운로드','csv','button secondary')}${button('로그아웃','logout','button secondary')}</div>${adminSummary(rows)}<div class="field"><label>하객 검색</label><input id="admin-search" placeholder="이름 또는 인연"></div><div class="tablewrap"><table><thead><tr><th>성함</th><th>인연</th><th>선택 옵션</th><th>인원</th><th>식사</th><th>피로연</th><th>셔틀 합계</th><th>구미 서울행</th><th>구미 귀가</th><th>김천 서울행</th><th>김천 귀가</th><th>도착</th><th>삭제</th></tr></thead><tbody id="admin-body">${rowHtml(rows)}</tbody></table></div><h2 style="margin-top:30px">현장 미등록 하객</h2><form id="walkin-form"><div class="field"><label>성함</label><input name="name" required maxlength="60"></div><div class="field"><label>우리와의 인연</label><select name="relationship"><option>가족</option><option>직장</option><option>학교</option><option>친구</option><option>기타</option></select></div><div class="field"><label>참석 인원</label><input name="guests" type="number" min="1" max="30" value="1" required></div><div class="field"><label>식사 인원</label><input name="meals" type="number" min="0" max="30" value="1" required></div><p id="walkin-error" class="error"></p><button class="button">현장 하객 등록</button></form>${adminFeatures()}</div>`}
+
+// Boarding records are separate from ceremony arrival check-in.
+// The route-specific counts are written through a protected RPC to prevent overwrites.
+const SHUTTLE_ROUTES=[
+ ['gumi_outbound','구미 → 서울'],['gumi_return','서울 → 구미'],
+ ['gimcheon_outbound','김천 → 서울'],['gimcheon_return','서울 → 김천']
+];
+const boardingKey=(id,route)=>id+'|'+route;
+function boardingPage(){
+ const route=state.shuttleRoute;
+ const rows=state.rows.filter(r=>r.attendance==='참석'&&countNumber(r[route])>0);
+ const booked=sumChoice(rows,route);
+ const boardById=new Map(state.boardingRows.filter(r=>r.route===route).map(r=>[r.rsvp_id,countNumber(r.boarded_count)]));
+ const boarded=rows.reduce((n,r)=>n+Math.min(countNumber(r[route]),boardById.get(r.id)||0),0);
+ const term=state.shuttleSearch.trim().toLocaleLowerCase();
+ const visible=rows.filter(r=>String(r.name||'').toLocaleLowerCase().includes(term));
+ return '<section class="shuttle-admin"><h2>셔틀 탑승 관리</h2><p class="small muted">관리자 전용 · 예식장 도착 체크인과 별개로 관리됩니다.</p>'+
+ '<label class="shuttle-label" for="shuttle-route">운행 노선</label><select id="shuttle-route">'+SHUTTLE_ROUTES.map(([value,name])=>'<option value="'+value+'" '+(route===value?'selected':'')+'>'+name+'</option>').join('')+'</select>'+
+ '<div class="shuttle-totals"><div><small>신청 인원</small><strong>'+booked+'명</strong></div><div><small>탑승 완료</small><strong>'+boarded+'명</strong></div><div><small>미탑승</small><strong>'+Math.max(0,booked-boarded)+'명</strong></div></div>'+
+ (!state.boardingAvailable?'<p class="error">탑승 기록 저장 기능을 사용할 수 없습니다. Supabase에 셔틀 탑승 관리 SQL 마이그레이션을 적용해 주세요.</p>':'')+
+ '<div class="shuttle-toolbar"><input id="shuttle-search" placeholder="탑승자 성함 검색" value="'+esc(state.shuttleSearch)+'" aria-label="탑승자 성함 검색"><button type="button" class="button secondary" data-action="refreshBoarding">새로고침</button></div>'+
+ '<div id="shuttle-list">'+(visible.length?visible.map(r=>{
+  const n=countNumber(r[route]),current=Math.min(n,boardById.get(r.id)||0);
+  return '<div class="shuttle-passenger"><div><strong>'+esc(r.name)+'</strong><p class="small muted">신청 '+n+'명 · 탑승 '+current+'명</p></div><div class="shuttle-stepper">'+
+  '<button type="button" data-board="'+esc(r.id)+'" data-delta="-1" '+(current===0||state.boardingBusy||!state.boardingAvailable?'disabled':'')+' aria-label="'+esc(r.name)+' 탑승 인원 줄이기">−</button>'+
+  '<strong>'+current+' / '+n+'</strong>'+
+  '<button type="button" data-board="'+esc(r.id)+'" data-delta="1" '+(current===n||state.boardingBusy||!state.boardingAvailable?'disabled':'')+' aria-label="'+esc(r.name)+' 탑승 인원 늘리기">+</button></div></div>';
+ }).join(''):'<p class="panel center">해당하는 탑승 신청자가 없습니다.</p>')+'</div>'+
+ '<p class="small muted">탑승한 인원만 + 버튼으로 기록합니다. 탑승 취소는 − 버튼을 누르세요. 기록은 서버에 저장되며 다른 관리자도 새로고침하면 확인할 수 있습니다.</p></section>';
+}
+async function loadBoarding(){
+ if(!db||!state.session)return;
+ const result=await db.from('shuttle_boardings').select('rsvp_id,route,boarded_count');
+ if(result.error){
+  state.boardingAvailable=false;
+  state.boardingRows=[];
+ }else{
+  state.boardingAvailable=true;
+  state.boardingRows=result.data||[];
+ }
+ render();
+}
+async function setBoarding(id,delta){
+ if(state.boardingBusy||!state.boardingAvailable)return;
+ const route=state.shuttleRoute,r=state.rows.find(x=>x.id===id&&x.attendance==='참석');
+ if(!r||countNumber(r[route])<1)return;
+ const current=state.boardingRows.find(x=>x.rsvp_id===id&&x.route===route)?.boarded_count||0;
+ const next=Math.max(0,Math.min(countNumber(r[route]),countNumber(current)+delta));
+ if(next===current)return;
+ state.boardingBusy=true;render();
+ const {error}=await db.rpc('admin_set_shuttle_boarding',{p_rsvp_id:id,p_route:route,p_count:next});
+ state.boardingBusy=false;
+ if(error){alert('탑승 기록 저장 실패: '+error.message);await loadBoarding();return}
+ await loadBoarding();
+}
+
+function admin(){if(!db)return '<h1>관리자</h1><p>Supabase 연결 후 관리자 기능을 사용할 수 있습니다.</p>';if(!state.session)return `<div class="admin"><h1 class="heading">관리자 로그인</h1><p class="center small muted">사전에 Supabase에서 생성한 관리자 계정으로 로그인하세요.</p><form id="login-form"><div class="field"><label>이메일</label><input name="email" type="email" required></div><div class="field"><label>비밀번호</label><input name="password" type="password" required></div><p id="login-error" class="error"></p><button class="button">로그인</button></form></div>`;const rows=state.rows,att=rows.filter(x=>x.attendance==='참석');return `<div class="admin"><h1>하객 관리</h1><div class="admin-view-tabs"><button type="button" class="chip ${state.adminPage==='guests'?'active':''}" data-admin-page="guests">하객 명단</button><button type="button" class="chip ${state.adminPage==='shuttle'?'active':''}" data-admin-page="shuttle">셔틀 탑승 관리</button></div>${state.adminPage==='shuttle'?boardingPage():`<div class="actions">${button('새로고침','refresh','button secondary')}${button('CSV 다운로드','csv','button secondary')}${button('로그아웃','logout','button secondary')}</div>${adminSummary(rows)}<div class="field"><label>하객 검색</label><input id="admin-search" placeholder="이름 또는 인연"></div><div class="tablewrap"><table><thead><tr><th>성함</th><th>인연</th><th>선택 옵션</th><th>인원</th><th>식사</th><th>피로연</th><th>셔틀 합계</th><th>구미 서울행</th><th>구미 귀가</th><th>김천 서울행</th><th>김천 귀가</th><th>도착</th><th>삭제</th></tr></thead><tbody id="admin-body">${rowHtml(rows)}</tbody></table></div><h2 style="margin-top:30px">현장 미등록 하객</h2><form id="walkin-form"><div class="field"><label>성함</label><input name="name" required maxlength="60"></div><div class="field"><label>우리와의 인연</label><select name="relationship"><option>가족</option><option>직장</option><option>학교</option><option>친구</option><option>기타</option></select></div><div class="field"><label>참석 인원</label><input name="guests" type="number" min="1" max="30" value="1" required></div><div class="field"><label>식사 인원</label><input name="meals" type="number" min="0" max="30" value="1" required></div><p id="walkin-error" class="error"></p><button class="button">현장 하객 등록</button></form>${adminFeatures()}`}</div>`}
 function rowHtml(rows){return rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.relationship)}</td><td><div class="admin-choice-list">${adminSelections(r)}</div></td><td>${r.guests}</td><td>${r.meals}</td><td>${esc(Number(r.meals)>0?'19~21시':'식사 없음')}</td><td>${r.shuttle_count}</td><td>${r.gumi_outbound??0}</td><td>${r.gumi_return??0}</td><td>${r.gimcheon_outbound??0}</td><td>${r.gimcheon_return??0}</td><td><button class="chip ${r.checked_in?'active':''}" data-check="${esc(r.id)}" ${r.attendance!=='참석'?'disabled':''}>${r.checked_in?'도착 ✓':'체크인'}</button></td><td><button type="button" class="chip danger-outline" data-delete-rsvp="${esc(r.id)}">삭제</button></td></tr>`).join('')}
 
 function render(){
@@ -306,7 +362,7 @@ function openPhotoLightbox(source){
   document.addEventListener('keydown',onKey);
   close.focus();
 }
-app.addEventListener('click',async e=>{const b=e.target.closest('button');if(b){if(b.dataset.tab){state.tab=b.dataset.tab;if(state.tab==='rsvp')await loadReceptionStatus();render();window.scrollTo(0,0);return}if(b.dataset.group){const group=b.dataset.group,val=b.dataset.value;if(group==='gumi'||group==='gimcheon')state[group]=val==='yes';else if(group==='rsvpMode'){state.rsvpMode=val;state.submitted=false;}else state[group]=val;render();return}if(b.dataset.counter){const k=b.dataset.counter;state[k]=Math.max(k==='meals'?0:1,Math.min(30,state[k]+Number(b.dataset.delta)));if(k==='guests'){state.meals=Math.min(state.meals,state.guests);state.shuttleCount=Math.min(state.shuttleCount,state.guests);state.gumiCount=Math.min(state.gumiCount,state.guests);state.gimcheonCount=Math.min(state.gimcheonCount,state.guests)}if(k==='meals')state.meals=Math.min(state.meals,state.guests);if(k==='shuttleCount')state.shuttleCount=Math.min(state.shuttleCount,state.guests);if(k==='gumiCount')state.gumiCount=Math.min(state.gumiCount,state.guests);if(k==='gimcheonCount')state.gimcheonCount=Math.min(state.gimcheonCount,state.guests);render();return}if(b.dataset.check){const row=state.rows.find(x=>x.id===b.dataset.check);if(!row)return;const {error}=await db.from('rsvps').update({checked_in:!row.checked_in}).eq('id',row.id);if(error)alert(error.message);else await loadRows();return}if(b.dataset.action){const a=b.dataset.action;if(a==='rsvp'){state.tab='rsvp';await loadReceptionStatus();render()}else if(a==='guestbook'||a==='archive'){state.tab=a;render()}else if(a==='editLookup'){state.rsvpMode='lookup';render()}else if(a==='newRsvp'){state.rsvpMode='new';state.name='';state.pin='';render()}else if(a==='deleteOwnRsvp'){
+app.addEventListener('click',async e=>{const b=e.target.closest('button');if(b){if(b.dataset.adminPage){state.adminPage=b.dataset.adminPage;state.shuttleSearch='';if(state.adminPage==='shuttle')await loadBoarding();else render();return}if(b.dataset.board){await setBoarding(b.dataset.board,Number(b.dataset.delta));return}if(b.dataset.tab){state.tab=b.dataset.tab;if(state.tab==='rsvp')await loadReceptionStatus();render();window.scrollTo(0,0);return}if(b.dataset.group){const group=b.dataset.group,val=b.dataset.value;if(group==='gumi'||group==='gimcheon')state[group]=val==='yes';else if(group==='rsvpMode'){state.rsvpMode=val;state.submitted=false;}else state[group]=val;render();return}if(b.dataset.counter){const k=b.dataset.counter;state[k]=Math.max(k==='meals'?0:1,Math.min(30,state[k]+Number(b.dataset.delta)));if(k==='guests'){state.meals=Math.min(state.meals,state.guests);state.shuttleCount=Math.min(state.shuttleCount,state.guests);state.gumiCount=Math.min(state.gumiCount,state.guests);state.gimcheonCount=Math.min(state.gimcheonCount,state.guests)}if(k==='meals')state.meals=Math.min(state.meals,state.guests);if(k==='shuttleCount')state.shuttleCount=Math.min(state.shuttleCount,state.guests);if(k==='gumiCount')state.gumiCount=Math.min(state.gumiCount,state.guests);if(k==='gimcheonCount')state.gimcheonCount=Math.min(state.gimcheonCount,state.guests);render();return}if(b.dataset.check){const row=state.rows.find(x=>x.id===b.dataset.check);if(!row)return;const {error}=await db.from('rsvps').update({checked_in:!row.checked_in}).eq('id',row.id);if(error)alert(error.message);else await loadRows();return}if(b.dataset.action){const a=b.dataset.action;if(a==='rsvp'){state.tab='rsvp';await loadReceptionStatus();render()}else if(a==='guestbook'||a==='archive'){state.tab=a;render()}else if(a==='editLookup'){state.rsvpMode='lookup';render()}else if(a==='newRsvp'){state.rsvpMode='new';state.name='';state.pin='';render()}else if(a==='deleteOwnRsvp'){
   if(state.loading)return;
   if(rsvpClosed()){alert('응답 삭제 기한이 지났습니다. 신랑·신부에게 연락해 주세요.');return}
   if(!confirm('등록한 참석 응답을 삭제할까요? 삭제 후에는 기존 응답을 불러올 수 없으며 다시 등록해야 합니다.'))return;
@@ -323,8 +379,9 @@ app.addEventListener('click',async e=>{const b=e.target.closest('button');if(b){
     if(errorNode)errorNode.textContent=message||'삭제하지 못했습니다. 보안 인증 후 다시 시도해 주세요.';
     b.disabled=false;if(window.turnstile){try{window.turnstile.reset()}catch{}}return}
   state.rsvpMode='deleted';state.name='';state.pin='';render();window.scrollTo(0,0);
-}else if(a==='video')alert('초대영상이 준비되면 이곳에서 재생됩니다.');else if(a.startsWith('copy:')){const parts=a.split(':');const acc=C.accounts[Number(parts[1])]?.members?.[Number(parts[2])];if(acc?.number){try{await navigator.clipboard.writeText(acc.number);b.textContent='복사 완료 ✓'}catch{b.textContent='계좌번호를 선택해 복사해 주세요'}}}else if(a==='refresh')await loadRows();else if(a==='csv')csv();else if(a==='logout'){await db.auth.signOut();state.session=null;render()}}}const img=e.target.closest('[data-photo]');if(img){openPhotoLightbox(img.dataset.photo)}});
-app.addEventListener('input',e=>{if(e.target.id==='guest-name')state.name=e.target.value;if(e.target.id==='guest-pin')state.pin=e.target.value});
+}else if(a==='video')alert('초대영상이 준비되면 이곳에서 재생됩니다.');else if(a.startsWith('copy:')){const parts=a.split(':');const acc=C.accounts[Number(parts[1])]?.members?.[Number(parts[2])];if(acc?.number){try{await navigator.clipboard.writeText(acc.number);b.textContent='복사 완료 ✓'}catch{b.textContent='계좌번호를 선택해 복사해 주세요'}}}else if(a==='refreshBoarding'){await loadRows();await loadBoarding()}else if(a==='refresh')await loadRows();else if(a==='csv')csv();else if(a==='logout'){await db.auth.signOut();state.session=null;render()}}}const img=e.target.closest('[data-photo]');if(img){openPhotoLightbox(img.dataset.photo)}});
+app.addEventListener('change',e=>{if(e.target.id==='shuttle-route'){state.shuttleRoute=e.target.value;state.shuttleSearch='';render()}});
+app.addEventListener('input',e=>{if(e.target.id==='shuttle-search'){state.shuttleSearch=e.target.value;const field=e.target;const start=field.selectionStart;render();const next=document.querySelector('#shuttle-search');if(next){next.focus();next.setSelectionRange(start,start)}return}if(e.target.id==='guest-name')state.name=e.target.value;if(e.target.id==='guest-pin')state.pin=e.target.value});
 app.addEventListener('submit',async e=>{e.preventDefault();const form=e.target;if(form.id==='rsvp-form'||form.id==='rsvp-lookup-form'){
   const name=form.querySelector('[name=name]').value.trim();
   const pin=form.querySelector('[name=pin]').value;
