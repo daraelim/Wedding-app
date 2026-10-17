@@ -180,11 +180,40 @@ async function setBoarding(id,delta){
 function admin(){if(!db)return '<h1>관리자</h1><p>Supabase 연결 후 관리자 기능을 사용할 수 있습니다.</p>';if(!state.session)return `<div class="admin"><h1 class="heading">관리자 로그인</h1><p class="center small muted">사전에 Supabase에서 생성한 관리자 계정으로 로그인하세요.</p><form id="login-form"><div class="field"><label>이메일</label><input name="email" type="email" required></div><div class="field"><label>비밀번호</label><input name="password" type="password" required></div><p id="login-error" class="error"></p><button class="button">로그인</button></form></div>`;const rows=state.rows,att=rows.filter(x=>x.attendance==='참석');return `<div class="admin"><h1>하객 관리</h1><div class="admin-view-tabs"><button type="button" class="chip ${state.adminPage==='guests'?'active':''}" data-admin-page="guests">하객 명단</button><button type="button" class="chip ${state.adminPage==='shuttle'?'active':''}" data-admin-page="shuttle">셔틀 탑승 관리</button></div>${state.adminPage==='shuttle'?boardingPage():`<div class="actions">${button('새로고침','refresh','button secondary')}${button('CSV 다운로드','csv','button secondary')}${button('로그아웃','logout','button secondary')}</div>${adminSummary(rows)}<div class="field"><label>하객 검색</label><input id="admin-search" placeholder="이름 또는 인연"></div><div class="tablewrap"><table><thead><tr><th>성함</th><th>인연</th><th>선택 옵션</th><th>인원</th><th>식사</th><th>피로연</th><th>셔틀 합계</th><th>구미 서울행</th><th>구미 귀가</th><th>김천 서울행</th><th>김천 귀가</th><th>도착</th><th>삭제</th></tr></thead><tbody id="admin-body">${rowHtml(rows)}</tbody></table></div><h2 style="margin-top:30px">현장 미등록 하객</h2><form id="walkin-form"><div class="field"><label>성함</label><input name="name" required maxlength="60"></div><div class="field"><label>우리와의 인연</label><select name="relationship"><option>가족</option><option>직장</option><option>학교</option><option>친구</option><option>기타</option></select></div><div class="field"><label>참석 인원</label><input name="guests" type="number" min="1" max="30" value="1" required></div><div class="field"><label>식사 인원</label><input name="meals" type="number" min="0" max="30" value="1" required></div><p id="walkin-error" class="error"></p><button class="button">현장 하객 등록</button></form>${adminFeatures()}`}</div>`}
 function rowHtml(rows){return rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.relationship)}</td><td><div class="admin-choice-list">${adminSelections(r)}</div></td><td>${r.guests}</td><td>${r.meals}</td><td>${esc(Number(r.meals)>0?'19~21시':'식사 없음')}</td><td>${r.shuttle_count}</td><td>${r.gumi_outbound??0}</td><td>${r.gumi_return??0}</td><td>${r.gimcheon_outbound??0}</td><td>${r.gimcheon_return??0}</td><td><button class="chip ${r.checked_in?'active':''}" data-check="${esc(r.id)}" ${r.attendance!=='참석'?'disabled':''}>${r.checked_in?'도착 ✓':'체크인'}</button></td><td><button type="button" class="chip danger-outline" data-delete-rsvp="${esc(r.id)}">삭제</button></td></tr>`).join('')}
 
+function startHeroVideo(){
+  const video=app.querySelector('.hero-video');
+  if(!video)return;
+  video.muted=true;
+  video.defaultMuted=true;
+  video.playsInline=true;
+  video.setAttribute('muted','');
+  video.setAttribute('playsinline','');
+  const attempt=()=>{
+    if(!video.isConnected||document.hidden)return;
+    const result=video.play();
+    if(result&&typeof result.then==='function')result.then(()=>{
+      video.parentElement?.querySelector('.hero-play-button')?.remove();
+    }).catch(()=>{
+      if(!video.isConnected||video.parentElement?.querySelector('.hero-play-button'))return;
+      const button=document.createElement('button');
+      button.type='button';
+      button.className='hero-play-button';
+      button.textContent='▶ 영상 재생';
+      button.setAttribute('aria-label','초대 영상 재생');
+      button.addEventListener('click',()=>video.play().then(()=>button.remove()).catch(()=>{}));
+      video.parentElement.append(button);
+    });
+  };
+  video.addEventListener('loadeddata',attempt,{once:true});
+  attempt();
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)startHeroVideo()});
 function render(){
   const adminMode=state.admin||location.pathname.startsWith('/admin');
 
   app.innerHTML=`<div class="shell"><header class="top"><span>DA-RAE &amp; MINWOO</span><span class="flower" style="font-size:25px">✿</span><span>2026.11.14</span></header><main class="main">${adminMode?admin():C.postWedding&&state.tab==='home'?`<h1 class="heading">함께해주셔서 감사합니다</h1><div class="flourish">─ ✿ ─</div>${C.photos.length?`<div class="photo-grid">${C.photos.map(p=>`<img src="${esc(p)}" alt="혼례 사진" loading="lazy" data-photo="${esc(p)}">`).join('')}</div>`:''}${C.archiveVideo?`<iframe title="혼례 영상" width="100%" height="220" src="${esc(C.archiveVideo)}" allowfullscreen></iframe>`:''}`:(state.tab==='guestbook'?pageFeature('guestbook'):state.tab==='archive'?pageFeature('archive'):({home,gallery,rsvp,guide,more}[state.tab]()))}</main>${!adminMode?`<nav class="nav">${[['home','초대'],['gallery','갤러리'],['rsvp','참석'],['guide','안내'],['more','더보기']].map(([v,t])=>`<button data-tab="${v}" class="${state.tab===v?'selected':''}">${t}</button>`).join('')}</nav>`:''}</div>`;
 
+  startHeroVideo();
   renderFeatureCaptcha();
   state.turnstileToken=null;
 
