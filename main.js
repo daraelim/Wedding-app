@@ -68,7 +68,16 @@ function guide(){
       <div class="guide-key"><span>피로연</span><strong>18:00–21:00</strong><small>신라스테이 광화문 · 혼례 후 이동</small></div>
     </div>
     <section class="guide-essentials"><h2>유의사항</h2><div class="guide-lines"><p>음식물·꽃 반입 금지</p><p>야외 예식 · 좌석 제한</p><p>따뜻한 복장 권장</p></div></section>
-    <section class="guide-essentials"><h2>교통 안내</h2><div class="guide-lines"><p><strong>김천 · 검역본부</strong> 12:30 출발 예정</p><p><strong>구미 · 구미시청</strong> 12:30 출발 예정</p><p><strong>운현궁</strong> 대중교통·셔틀버스 이용 권장</p><p><strong>대중교통</strong> 서울역에서 지하철 1호선 탑승 → 종로3가역에서 3호선 환승 → 안국역 하차(4번 출구) → 운현궁까지 도보</p><p><strong>현장 셔틀</strong> 운현궁 ↔ 신라스테이 광화문 왕복 운행 · 승차 위치 추후 안내</p><p><strong>지역 셔틀 귀가</strong> 20:30 출발 예정</p></div></section>
+    <section class="guide-essentials"><h2>교통 안내</h2><div class="guide-lines">
+      <p><strong>자가용 이용</strong> 운현궁 주변 주차 공간이 협소하여 대중교통 또는 셔틀버스 이용을 권장합니다.</p>
+      <p><strong>대중교통</strong></p>
+      <p>지하철 · 서울역(1호선) → 종로3가역(3호선 환승) → 안국역 4번 출구 → 운현궁 도보 이동</p>
+      <p>버스 · 안국역 또는 운현궁 인근 정류장 하차 후 도보 이동</p>
+      <p><strong>셔틀 이용</strong></p>
+      <p>구미 · 구미시청 출발 12:30 / 귀가 20:30 출발 예정</p>
+      <p>김천 · 검역본부 출발 12:30 / 귀가 20:30 출발 예정</p>
+      <p>현장 셔틀 · 운현궁 ↔ 신라스테이 광화문 왕복 운행 (승차 위치 추후 안내)</p>
+    </div></section>
     
     <details class="guide-extra"><summary>오시는 길 · 지도 · 주차 안내</summary>
       ${venueSection('01','전통혼례',C.ceremony)}
